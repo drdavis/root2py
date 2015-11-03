@@ -13,13 +13,30 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 class pyTH1(object):
-    """ content:     the height of each bin
-        error:       the error of each bin
-        bin_edges:   the bin edges |____|____|____|___..
-                                  [0]  [1]  [2]  [3]     
-        bin_centers: the centers of each bin |_____|_____|_____|__...
-                                               [0]   [1]   [2]          """
-    def __init__(self,hist):
+    """     
+    A class to simply convert a single histogram from ROOT
+    into a matplotlib histogram.
+    This class has access to matplotlib.pyplot as plt
+    for configuring titles, axes, rangers, etc.
+    This configuring must be handled before the draw(...)
+    function is called.
+
+    Members
+    -------
+
+    content:     the height of each bin
+    error:       the error of each bin
+    bin_edges:   the bin edges |____|____|____|___..
+                              [0]  [1]  [2]  [3]     
+    bin_centers: the centers of each bin |_____|_____|_____|__...
+                                           [0]   [1]   [2]
+
+
+    possible keywords: color, histtype
+
+    """
+
+    def __init__(self,hist,color='blue',histtype='step'):
 
         self._root_hist = hist
 
@@ -33,16 +50,90 @@ class pyTH1(object):
                                       self._root_hist.GetXaxis().GetBinLowEdge(i+1))
                                      for i in xrange(self._root_hist.GetNbinsX())])
 
-    def draw(self,col='blue',htype='step',titles=['main title','x title','y title']):
-        """ draw the histogram in matplotlib """
+        self.plt = plt
+
+        self.col   = color
+        self.htype = histtype
+        
+    def draw(self):
+        """ 
+        draw the histogram in matplotlib
+        """
         plt.hist(self.bin_centers,bins=self.bin_edges,weights=self.content,
-                 histtype=htype,color=col)
-        plt.title(titles[0])
-        plt.xlabel(titles[1])
-        plt.ylabel(titles[2])
+                 histtype=self.htype,color=self.col)
         plt.show()
         
-    
+
+class pyTH1multi(object):
+    """
+    A class to plot multiple histograms from a list of
+    ROOT histograms. This class is basically identical to
+    pyTH1, but with the members now being lists, and a slightly
+    more complex draw() function.
+
+    The labels and colors for this
+    class must be given to the class definition function with
+    the keywords labels and cols. For example:
+    labels=['a','b','c'] 
+    cols=['blue,'red','green']
+
+    other keywords: histtype, stacked
+    """
+
+    def __init__(self,*args,**kwargs):
+        self.hists  = args
+        self.pyTH1s = [pyTH1(hist) for hist in self.hists]
+
+        self.content_list     = [h.content     for h in self.pyTH1s]
+        self.error_list       = [h.error       for h in self.pyTH1s]
+        self.bin_edges_list   = [h.bin_edges   for h in self.pyTH1s]
+        self.bin_centers_list = [h.bin_centers for h in self.pyTH1s]
+
+        self.plt = plt
+
+        if 'labels' not in kwargs:
+            self.labels = ['hist'+str(i) for i in xrange(len(args))]
+        else:
+            self.labels = kwargs.get('labels')
+            if len(self.labels) != len(args):
+                exit('bad labels length')
+
+        if 'cols' not in kwargs:
+            self.cols = ['blue' for _ in xrange(len(args))]
+        else:
+            self.cols = kwargs.get('cols')
+            if len(self.cols) != len(args):
+                exit('bad cols length')
+
+        if 'histtype' in kwargs:
+            self.htype = kwargs.get('histtype')
+        else:
+            self.htype = 'step'
+
+        if 'stacked' in kwargs:
+            self.stk = kwargs.get('stacked')
+        else:
+            self.stk = False
+            
+            
+    def draw(self,legend=True):
+        """
+        Draw the stacked histograms.
+        The legend can be turned off with legend=False
+        """
+        plt.hist(self.bin_centers_list,
+                 bins=self.bin_edges_list[0],
+                 weights=self.content_list,
+                 label=self.labels,
+                 color=self.cols,
+                 histtype=self.htype,
+                 stacked=self.stk)
+        if legend:
+            plt.legend(loc='best')
+        else:
+            pass
+        plt.show()
+        
 class pyTGraph(object):
     """ xy_pairs : [[x1,y1],...,[xN,yN]] """
     def __init__(self,tgraph):
