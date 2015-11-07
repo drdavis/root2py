@@ -66,10 +66,12 @@ class pyTH1(object):
 
 class pyTH1multi(object):
     """
-    A class to plot multiple histograms from a list of
+    A class to plot multiple histograms from a set of
     ROOT histograms. This class is basically identical to
     pyTH1, but with the members now being lists, and a slightly
     more complex draw() function.
+
+    created with pyTH1multi(hist1,hist2,...,hist2,keywords arguments)
 
     The labels and colors for this
     class must be given to the class definition function with
@@ -133,9 +135,29 @@ class pyTH1multi(object):
         else:
             pass
         plt.show()
+
+class pyTH1multiWithRatio(pyTH1multi):
+    """
+    Similar to pyTH1multi but with the added
+    feature of handling a ratio histogram.
+    Needless to say the ratio histogram is assumed
+    to have the same binning as the main histograms.
+    """
+
+    def __init__(self,*args,**kwargs):
+        pyTH1multi.__init__(self,*args,**kwargs)
+        if 'ratio' not in kwargs:
+            exit('specify ratio histogram')
+        self.ratio_hist = kwargs.get('ratio')
+        
+    def draw(self,legend=True):
+        print 'tbi'
+
         
 class pyTGraph(object):
-    """ xy_pairs : [[x1,y1],...,[xN,yN]] """
+    """
+    xy_pairs : [[x1,y1],...,[xN,yN]]
+    """
     def __init__(self,tgraph):
         self._root_tgraph = tgraph
         self.xy_pairs = np.vstack((np.frombuffer(self._root_tgraph.GetX(),

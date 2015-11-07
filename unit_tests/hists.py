@@ -25,4 +25,8 @@ hist2.FillRandom('gaus',10000)
 py_stack = root2py.pyTH1multi(hist1,hist2,cols=['red','blue'],
                               labels=['a','b'],stacked=True)
 py_stack.plt.xlabel('wowowow')
-py_stack.draw(legend=True)
+#py_stack.draw(legend=True)
+
+pywratio = root2py.pyTH1multiWithRatio(hist1,hist2,cols=['red','blue'],ratio=hist1)
+pywratio.plt.xlabel('wut')
+pywratio.draw()
