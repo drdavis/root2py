@@ -153,6 +153,19 @@ class pyTH1multiWithRatio(pyTH1multi):
     def draw(self,legend=True):
         print 'tbi'
 
+
+class pyTProfile(pyTH1):
+    """
+    A TProfile type histogram, essentially a 
+    pyTH1 but with different drawing style
+    """
+    def __init__(self,hist,color='red'):
+        pyTH1.__init__(self,hist,color=color)
+
+    def draw(self):
+        plt.errorbar(self.bin_centers,self.content,xerr=0,yerr=self.error,
+                     color=self.col,fmt='o')
+        plt.show()
         
 class pyTGraph(object):
     """
