@@ -151,7 +151,7 @@ class pyTH1multiWithRatio(pyTH1multi):
         self.ratio_hist = kwargs.get('ratio')
         
     def draw(self,legend=True):
-        print 'tbi'
+        print('tbi')
 
 
 class pyTProfile(pyTH1):
