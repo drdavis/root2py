@@ -18,6 +18,12 @@ class pyTH1(object):
     """     
     A class to simply convert a single histogram from ROOT
     into a matplotlib histogram.
+
+    Most other classes in this library inherit from this
+    base class. The general form of the numpy arrays which
+    contain the histogram bin centers, bin edges, bin
+    content (heights), and content errors, is used througout.
+    
     This class has access to matplotlib.pyplot as plt
     for configuring titles, axes, rangers, etc.
     This configuring must be handled before the draw(...)
@@ -208,6 +214,23 @@ class pyTProfile(pyTH1):
     def draw(self):
         plt.errorbar(self.bin_centers,self.content,xerr=0,yerr=self.error,
                      color=self.col,fmt='o')
+        plt.show()
+
+class pyTProfileMulti(pyTH1multi):
+    def __init__(self,*args,**kwargs):
+        pyTH1multi.__init__(self,*args,**kwargs)
+        
+    def draw(self,legend=True):
+        for i in xrange(len(self.content_list)):
+            self.plt.errorbar(self.bin_centers_list[i],
+                              self.content_list[i],
+                              yerr=self.error_list[i],
+                              fmt='o',color=self.cols[i],
+                              label=self.labels[i])
+        if legend:
+            self.plt.legend(loc='best',numpoints=1)
+        else:
+            pass
         plt.show()
         
 class pyTGraph(object):
