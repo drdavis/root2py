@@ -29,4 +29,4 @@ py_stack.plt.xlabel('wowowow')
 
 pywratio = root2py.pyTH1multiWithRatio(hist1,hist2,cols=['red','blue'],ratio=hist1)
 pywratio.plt.xlabel('wut')
-pywratio.draw()
+pywratio.draw(save='lol.pdf')

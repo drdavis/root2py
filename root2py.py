@@ -63,12 +63,14 @@ class pyTH1(object):
         self.col   = color
         self.htype = histtype
         
-    def draw(self):
+    def draw(self,save=None):
         """ 
         draw the histogram in matplotlib
         """
         plt.hist(self.bin_centers,bins=self.bin_edges,weights=self.content,
                  histtype=self.htype,color=self.col)
+        if save:
+            plt.savefig(save)
         plt.show()
         
 
@@ -126,7 +128,7 @@ class pyTH1multi(object):
             self.stk = False
             
             
-    def draw(self,legend=True):
+    def draw(self,legend=True,save=None):
         """
         Draw the stacked histograms.
         The legend can be turned off with legend=False
@@ -142,6 +144,8 @@ class pyTH1multi(object):
             plt.legend(loc='best')
         else:
             pass
+        if save:
+            plt.savefig(save)
         plt.show()
 
 class pyTH1multiWithRatio(pyTH1multi):
@@ -175,7 +179,7 @@ class pyTH1multiWithRatio(pyTH1multi):
         setp(self.ax0.get_xticklabels(),visible=False)
 
         
-    def draw(self,legend=True,save='None'):
+    def draw(self,legend=True,save=None):
 
         self.ax0.hist(self.bin_centers_list,
                       bins=self.bin_edges_list[0],
@@ -200,6 +204,8 @@ class pyTH1multiWithRatio(pyTH1multi):
             self.ax0.legend(loc='best',numpoints=1)
         else:
             pass
+        if save:
+            plt.savefig(save)
         self.plt.show()
 
 
@@ -211,16 +217,18 @@ class pyTProfile(pyTH1):
     def __init__(self,hist,color='red'):
         pyTH1.__init__(self,hist,color=color)
 
-    def draw(self):
+    def draw(self,save=None):
         plt.errorbar(self.bin_centers,self.content,xerr=0,yerr=self.error,
                      color=self.col,fmt='o')
+        if save:
+            plt.savefig(save)
         plt.show()
 
 class pyTProfileMulti(pyTH1multi):
     def __init__(self,*args,**kwargs):
         pyTH1multi.__init__(self,*args,**kwargs)
         
-    def draw(self,legend=True):
+    def draw(self,legend=True,save=None):
         for i in xrange(len(self.content_list)):
             self.plt.errorbar(self.bin_centers_list[i],
                               self.content_list[i],
@@ -231,6 +239,8 @@ class pyTProfileMulti(pyTH1multi):
             self.plt.legend(loc='best',numpoints=1)
         else:
             pass
+        if save:
+            plt.savefig(save)
         plt.show()
         
 class pyTGraph(object):
