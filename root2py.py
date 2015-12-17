@@ -179,7 +179,7 @@ class pyTH1multiWithRatio(pyTH1multi):
         setp(self.ax0.get_xticklabels(),visible=False)
 
         
-    def draw(self,legend=True,save=None):
+    def draw(self,legend=True,save=None,normed=False):
 
         self.ax0.hist(self.bin_centers_list,
                       bins=self.bin_edges_list[0],
@@ -187,7 +187,8 @@ class pyTH1multiWithRatio(pyTH1multi):
                       label=self.labels,
                       color=self.cols,
                       histtype=self.htype,
-                      stacked=self.stk)
+                      stacked=self.stk,
+                      normed=normed)
 
         if self.yes_data:
             self.ax0.errorbar(self.data_hist.bin_centers,
@@ -199,6 +200,10 @@ class pyTH1multiWithRatio(pyTH1multi):
                           self.ratio_hist.content,
                           fmt='ko',
                           yerr=self.ratio_hist.error)
+
+        self.ax1.plot(np.linspace(0,max(self.ratio_hist.bin_centers),100),
+                      [1 for i in xrange(len(self.ratio_hist.bin_centers))],
+                      'k--')
         
         if legend:
             self.ax0.legend(loc='best',numpoints=1)
@@ -239,6 +244,41 @@ class pyTProfileMulti(pyTH1multi):
             self.plt.legend(loc='best',numpoints=1)
         else:
             pass
+        if save:
+            plt.savefig(save)
+        plt.show()
+
+class pyTProfileMultiRatio(pyTH1multi):
+    def __init__(self,*args,**kwargs):
+        pyTH1multi.__init__(self,*args,**kwargs)
+
+        self.ratio_hist = kwargs.get('ratio')
+        self.ratio_hist = pyTH1(self.ratio_hist)
+        
+        self.plt = plt
+        self.fig = self.plt.figure(figsize=(9,6))
+        self.gs  = gsc.GridSpec(2,1,height_ratios=[3,1])
+        self.gs.update(hspace=0.075)
+        self.ax0 = self.plt.subplot(self.gs[0])
+        self.ax1 = self.plt.subplot(self.gs[1],sharex=self.ax0)
+        setp(self.ax0.get_xticklabels(),visible=False)
+
+    def draw(self,legend=True,save=None):
+        for i in xrange(len(self.content_list)):
+            self.ax0.errorbar(self.bin_centers_list[i],
+                              self.content_list[i],
+                              yerr=self.error_list[i],
+                              fmt='o',color=self.cols[i],
+                              label=self.labels[i])
+        if legend:
+            self.ax0.legend(loc='best',numpoints=1)
+        else:
+            pass
+        self.ax1.errorbar(self.ratio_hist.bin_centers,
+                          self.ratio_hist.content,
+                          yerr=self.ratio_hist.error,color='black',fmt='o')
+        self.ax1.plot(np.linspace(0,np.max(self.ratio_hist.bin_centers),100),
+                      [1 for x in xrange(100)],'k--')
         if save:
             plt.savefig(save)
         plt.show()
