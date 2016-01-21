@@ -11,8 +11,12 @@ root2py
 import ROOT
 import numpy as np
 import matplotlib.pyplot as plt
+import matplotlib as mpl
 import matplotlib.gridspec as gsc
 from pylab import setp
+
+mpl.rcParams['xtick.labelsize'] = 12
+mpl.rcParams['ytick.labelsize'] = 12
 
 class pyTH1(object):
     """     
@@ -102,7 +106,9 @@ class pyTH1multi(object):
         self.bin_centers_list = [h.bin_centers for h in self.pyTH1s]
 
         self.plt = plt
-
+        self.fig = plt.figure()
+        self.ax  = self.fig.add_subplot(111)
+        
         if 'labels' not in kwargs:
             self.labels = ['hist'+str(i) for i in xrange(len(args))]
         else:
@@ -128,20 +134,20 @@ class pyTH1multi(object):
             self.stk = False
             
             
-    def draw(self,legend=True,save=None):
+    def draw(self,legend=True,save=None,legendfontsize=12):
         """
         Draw the stacked histograms.
         The legend can be turned off with legend=False
         """
-        plt.hist(self.bin_centers_list,
-                 bins=self.bin_edges_list[0],
-                 weights=self.content_list,
-                 label=self.labels,
-                 color=self.cols,
-                 histtype=self.htype,
-                 stacked=self.stk)
+        self.ax.hist(self.bin_centers_list,
+                     bins=self.bin_edges_list[0],
+                     weights=self.content_list,
+                     label=self.labels,
+                     color=self.cols,
+                     histtype=self.htype,
+                     stacked=self.stk)
         if legend:
-            plt.legend(loc='best')
+            self.ax.legend(loc='best',numpoints=1,fontsize=legendfontsize)
         else:
             pass
         if save:
@@ -179,7 +185,7 @@ class pyTH1multiWithRatio(pyTH1multi):
         setp(self.ax0.get_xticklabels(),visible=False)
 
         
-    def draw(self,legend=True,save=None,normed=False):
+    def draw(self,legend=True,save=None,normed=False,legendfontsize=12):
 
         self.ax0.hist(self.bin_centers_list,
                       bins=self.bin_edges_list[0],
@@ -206,7 +212,7 @@ class pyTH1multiWithRatio(pyTH1multi):
                       'k--')
         
         if legend:
-            self.ax0.legend(loc='best',numpoints=1)
+            self.ax0.legend(loc='best',numpoints=1,fontsize=legendfontsize)
         else:
             pass
         if save:
@@ -233,7 +239,7 @@ class pyTProfileMulti(pyTH1multi):
     def __init__(self,*args,**kwargs):
         pyTH1multi.__init__(self,*args,**kwargs)
         
-    def draw(self,legend=True,save=None):
+    def draw(self,legend=True,save=None,legendfontsize=12):
         for i in xrange(len(self.content_list)):
             self.plt.errorbar(self.bin_centers_list[i],
                               self.content_list[i],
@@ -241,7 +247,7 @@ class pyTProfileMulti(pyTH1multi):
                               fmt='o',color=self.cols[i],
                               label=self.labels[i])
         if legend:
-            self.plt.legend(loc='best',numpoints=1)
+            self.plt.legend(loc='best',numpoints=1,fontsize=legendfontsize)
         else:
             pass
         if save:
@@ -263,7 +269,7 @@ class pyTProfileMultiRatio(pyTH1multi):
         self.ax1 = self.plt.subplot(self.gs[1],sharex=self.ax0)
         setp(self.ax0.get_xticklabels(),visible=False)
 
-    def draw(self,legend=True,save=None):
+    def draw(self,legend=True,save=None,legendfontsize=12):
         for i in xrange(len(self.content_list)):
             self.ax0.errorbar(self.bin_centers_list[i],
                               self.content_list[i],
@@ -271,7 +277,7 @@ class pyTProfileMultiRatio(pyTH1multi):
                               fmt='o',color=self.cols[i],
                               label=self.labels[i])
         if legend:
-            self.ax0.legend(loc='best',numpoints=1)
+            self.ax0.legend(loc='best',numpoints=1,fontsize=legendfontsize)
         else:
             pass
         self.ax1.errorbar(self.ratio_hist.bin_centers,
