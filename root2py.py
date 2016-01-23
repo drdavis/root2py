@@ -17,6 +17,7 @@ from pylab import setp
 
 mpl.rcParams['xtick.labelsize'] = 12
 mpl.rcParams['ytick.labelsize'] = 12
+max_yticks                      = 5
 
 class pyTH1(object):
     """     
@@ -210,6 +211,9 @@ class pyTH1multiWithRatio(pyTH1multi):
         self.ax1.plot(np.linspace(0,max(self.ratio_hist.bin_centers),100),
                       [1 for i in xrange(len(self.ratio_hist.bin_centers))],
                       'k--')
+
+        yloc = self.plt.MaxNLocator(max_yticks)
+        self.ax1.yaxis.set_major_locator(yloc)
         
         if legend:
             self.ax0.legend(loc='best',numpoints=1,fontsize=legendfontsize)
@@ -270,6 +274,8 @@ class pyTProfileMultiRatio(pyTH1multi):
         setp(self.ax0.get_xticklabels(),visible=False)
 
     def draw(self,legend=True,save=None,legendfontsize=12):
+        yloc = self.plt.MaxNLocator(max_yticks)
+        self.ax1.yaxis.set_major_locator(yloc)
         for i in xrange(len(self.content_list)):
             self.ax0.errorbar(self.bin_centers_list[i],
                               self.content_list[i],
