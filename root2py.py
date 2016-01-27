@@ -15,9 +15,9 @@ class err(Exception):
     def __str__(self):
         return repr(self.value)
 
-class plotBase(object):
+class plot_base(object):
     def __init__(self,**kwargs):
-        super(plotBase,self).__init__()
+        super(plot_base,self).__init__()
         
         self.plt = plt
 
@@ -40,51 +40,56 @@ class plotBase(object):
         else:
             self.titles = [' ',' ']
             
-class binnedObject(plotBase):
+class binned_object(object):
     """     
     A class to simply convert a single binned object
-    from ROOT into a matplotlib histogram/plot.
+    into a set of numpy arrays.
 
     The general form of the numpy arrays which
-    contain the bin centers, bin edges, bin content
-    (heights), and content errors, is used througout.
+    contain the bin centers, bin edges, bin contents
+    (heights), and contents errors, is used througout
+    other root2py classes.
     
-    This class has access to matplotlib.pyplot as plt
-    for configuring titles, axes, rangers, etc.
-    This configuring must be handled before the draw(...)
-    function is called.
-
     Members
     -------
 
-    content:     the height of each bin
+    contents:     the height of each bin
     error:       the error of each bin
-    bin_edges:   the bin edges |____|____|____|___..
+    edges:   the bin edges |____|____|____|___..
                               [0]  [1]  [2]  [3]     
-    bin_centers: the centers of each bin |_____|_____|_____|__...
+    centers: the centers of each bin |_____|_____|_____|__...
                                            [0]   [1]   [2]
 
-    possible keywords: color, histtype
     """
-    def __init__(self,hist,color='blue',histtype='step',**kwargs):
-        super(binnedObject,self).__init__(**kwargs)
+    def __init__(self,hist):
+        super(binned_object,self).__init__()
+        
         self._root_hist  = hist
-        self.content     = np.array([self._root_hist.GetBinContent(i+1)
-                                     for i in xrange(self._root_hist.GetNbinsX())])
-        self.error       =  np.array([self._root_hist.GetBinError(i+1)
-                                      for i in xrange(self._root_hist.GetNbinsX())])
-        self.bin_edges   = np.array([self._root_hist.GetXaxis().GetBinLowEdge(i+1)
-                                     for i in xrange(self._root_hist.GetNbinsX()+1)])
-        self.bin_centers = np.array([(self._root_hist.GetXaxis().GetBinWidth(i+1)*0.5 +
-                                      self._root_hist.GetXaxis().GetBinLowEdge(i+1))
-                                     for i in xrange(self._root_hist.GetNbinsX())])
+
+        self.contents = np.array([self._root_hist.GetBinContent(i+1)
+                                  for i in xrange(self._root_hist.GetNbinsX())])
+        self.error    = np.array([self._root_hist.GetBinError(i+1)
+                                  for i in xrange(self._root_hist.GetNbinsX())])
+        self.edges    = np.array([self._root_hist.GetXaxis().GetBinLowEdge(i+1)
+                                  for i in xrange(self._root_hist.GetNbinsX()+1)])
+        self.centers  = np.array([(self._root_hist.GetXaxis().GetBinWidth(i+1)*0.5 +
+                                   self._root_hist.GetXaxis().GetBinLowEdge(i+1))
+                                  for i in xrange(self._root_hist.GetNbinsX())])
+
+class single_hist(plot_base):
+    """
+    A single histogram.
     
+    """
+    def __init__(self,roothist,color='blue',histtype='step',**kwargs):
+        super(single_hist,self).__init__(**kwargs)
+        self.bo = binned_object(roothist)
         self.color = color
-        self.htype = histtype
+        self.histtype = histtype
 
     def draw(self,save=None):
-        self.plt.hist(self.bin_centers,self.bin_edges,weights=self.content,
-                      histtype=self.htype,color=self.color)
+        self.plt.hist(self.bo.centers,bins=self.bo.edges,weights=self.bo.contents,
+                      histtype=self.histtype,color=self.color)
         if self.xlim:
             self.plt.xlim(self.xlim)
         if self.ylim:
@@ -96,4 +101,99 @@ class binnedObject(plotBase):
         if save:
             self.plt.savefig(save)
         self.plt.show()
+
+class multi_hist(plot_base):
+    """
+    A set of histograms on a single canvas
+    """
+    def __init__(self,hists,histtype='stepfilled',stacked=False,
+                 scatter=False,data=None,ratio=None,**kwargs):
+        super(multi_hist,self).__init__(**kwargs)
+        self.bos = [binned_object(h) for h in hists]
+        if data:
+            self.data = binned_object(data)
+        else:
+            self.data = None
+        if ratio:
+            self.ratio = binned_object(ratio)
+        else:
+            self.ratio = None
+        self.contents = [bo.contents for bo in self.bos]
+        self.errors = [bo.error for bo in self.bos]
+        self.edges = [bo.edges for bo in self.bos]
+        self.centers = [bo.centers for bo in self.bos]
+        self.colors = kwargs.get('colors')
+        self.histtype = histtype
+        self.scatter = scatter
+        self.histlabels = kwargs.get('histlabels')
+        self.stacked = stacked
+        if len(self.bos) != len(self.colors) or len(self.bos) != len(self.histlabels):
+            raise err('colors and histlabels must have length equal the number of histograms')
+
+        if self.ratio:
+            self.fig = self.plt.figure(figsize=(9,6))
+            self.gs  = gsc.GridSpec(2,1,height_ratios=[3,1])
+            self.gs.update(hspace=0.075)
+            self.ax0 = self.plt.subplot(self.gs[0])
+            self.ax1 = self.plt.subplot(self.gs[1],sharex=self.ax0)
+            setp(self.ax0.get_xticklabels(),visible=False)
+            self.c0 = self.ax0
+            self.c1 = self.ax1
+        else:
+            self.c0 = self.plt
+
+
+    def text(self,x,y,line):
+        if self.ratio:
+            self.c0.text(x,y,line,transform=self.c0.transAxes)
+        else:
+            print 'Warning: multi_hist.text is only available when plotting with a ratio'
+            
+    def draw(self,save=None,legend=True,legendfontsize=12):
+
+        if self.scatter == False:
+            self.c0.hist(self.centers,bins=self.edges[0],weights=self.contents,
+                         label=self.histlabels,color=self.colors,
+                         histtype=self.histtype,stacked=self.stacked)
+        else:
+            for i in xrange(len(self.bos)):
+                self.c0.errorbar(self.centers[i],
+                                 self.contents[i],
+                                 yerr=self.errors[i],
+                                 fmt='o',color=self.colors[i],label=self.histlabels[i])
+            
+        if self.data:
+            self.c0.errorbar(self.data.centers,self.data.contents,
+                             fmt='ko',yerr=self.data.error)
+
+        if self.ratio:
+            self.c1.errorbar(self.ratio.centers,self.ratio.contents,
+                             fmt='ko',yerr=self.ratio.error)
+            self.c1.plot(np.linspace(self.edges[0][0],self.edges[0][-1],100),
+                         np.array([1 for i in xrange(100)]),'k--')
         
+        if self.xlim:
+            if self.ratio:
+                self.c1.set_xlim(self.xlim)
+            else:
+                self.c0.xlim(self.xlim)
+        if self.ylim:
+            if self.ratio:
+                self.c0.set_ylim(self.xlim)
+            else:
+                self.c0.ylim(self.ylim)
+
+        if self.ratio:
+            self.c0.set_ylabel(self.titles[1])
+            self.c1.set_xlabel(self.titles[0])
+        else:
+            self.plt.xlabel(self.titles[0])
+            self.plt.ylabel(self.titles[1])
+
+        if legend:
+            self.c0.legend(loc='best',numpoints=1,fontsize=legendfontsize)
+            
+        if save:
+            self.plt.savefig(save)
+        self.plt.show()
+
