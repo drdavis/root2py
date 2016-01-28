@@ -143,11 +143,15 @@ class multi_hist(plot_base):
             self.c0 = self.plt
 
 
-    def text(self,x,y,line):
+    def text(self,x,y,line,style=None,size=12,manualcoords=False):
         if self.ratio:
-            self.c0.text(x,y,line,transform=self.c0.transAxes)
+            if not manualcoords:
+                self.c0.text(x,y,line,transform=self.c0.transAxes,style=style,size=size)
+            else:
+                self.c0.text(x,y,line,style=style,size=size)
         else:
-            print 'Warning: multi_hist.text is only available when plotting with a ratio'
+            print 'Warning: multi_hist.text is only available when plotting with a ratio\n'\
+                + '\t add text manually through the plt handle'
             
     def draw(self,save=None,legend=True,legendfontsize=12):
 
@@ -197,3 +201,25 @@ class multi_hist(plot_base):
             self.plt.savefig(save)
         self.plt.show()
 
+class unbinned_object(object):
+    def __init__(self,obj,objtype='TGraph'):
+        super(unbinned_object,self).__init__()
+        if objtype != 'TGraph':
+            raise err('only objtype \'TGraph\' supported at this time')
+        self.root_tgraph = obj
+
+        self.xy_pairs = np.vstack((np.frombuffer(self.root_tgraph.GetX(),
+                                                 count=self.root_tgraph.GetN()),
+                                   np.frombuffer(self.root_tgraph.GetY(),
+                                                 count=self.root_tgraph.GetN()))).T
+
+class single_tgraph(plot_base):
+    def __init__(self,obj,objtype='TGraph',**kwargs):
+        super(single_tgraph,self).__init__(**kwargs)
+        self.xy_pairs = unbinned_object(obj,objtype).xy_pairs
+        self.x = self.xy_pairs.T[0]
+        self.y = self.xy_pairs.T[1]
+
+    def draw(self,save=None):
+        self.plt.plot(self.x,self.y,'bo')
+        self.plt.show()

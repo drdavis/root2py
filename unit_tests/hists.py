@@ -25,13 +25,6 @@ def check_single_hist():
                             ylim=[-100,1000],
                             titles=['a','b'],
                             color='green')
-    print m.color
-    print m.xlim
-    
-    if m.xlim:
-        print 'yes'
-    else:
-        print 'no'
 
     m.draw(save='ok.eps')
 
@@ -44,13 +37,9 @@ def check_multi_hist():
                            stacked=False,
                            data=None,
                            scatter=False,ratio=hist3)
-    print m.colors
-    print m.xlim
-    print m.ylim
-    print m.histlabels
-    m.text(.05,.9,'testtext')
-    m.draw(save='ok.eps')
+    m.text(.05,.9,'testtext',style='italic')
+    m.draw(save='ok.eps',legendfontsize=10)
     
 check_plot_base()
-#check_single_hist()
+check_single_hist()
 check_multi_hist()
