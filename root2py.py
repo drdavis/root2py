@@ -155,7 +155,8 @@ class multi_hist(plot_base):
             print 'Warning: multi_hist.text is only available when plotting with a ratio\n'\
                 + '\t add text manually through the plt handle'
             
-    def draw(self,save=None,legend=True,legendfontsize=12,asi=False):
+    def draw(self,show=True,save=None,legend=True,legendfontsize=12,
+             asi=False,awip=False,ai=False):
 
         if self.scatter == False:
             self.c0.hist(self.centers,bins=self.edges[0],weights=self.contents,
@@ -171,13 +172,24 @@ class multi_hist(plot_base):
         if self.data:
             self.c0.errorbar(self.data.centers,self.data.contents,
                              fmt='ko',yerr=self.data.error)
+        else:
+            pass
 
         if self.ratio:
             self.c1.errorbar(self.ratio.centers,self.ratio.contents,
                              fmt='ko',yerr=self.ratio.error)
             self.c1.plot(np.linspace(self.edges[0][0],self.edges[0][-1],100),
                          np.array([1 for i in xrange(100)]),'k--')
-        
+
+            self.c0.set_ylabel(self.titles[1],size=14)
+            self.c1.set_xlabel(self.titles[0],size=14)
+            self.c1.set_ylabel(r'Ratio',size=14)
+            self.c1.yaxis.set_major_locator(self.plt.MaxNLocator(max_yticks))
+
+        else:
+            self.plt.xlabel(self.titles[0],size=14)
+            self.plt.ylabel(self.titles[1],size=14)
+            
         if self.xlim:
             if self.ratio:
                 self.c1.set_xlim(self.xlim)
@@ -189,24 +201,31 @@ class multi_hist(plot_base):
             else:
                 self.c0.ylim(self.ylim)
 
-        if self.ratio:
-            self.c0.set_ylabel(self.titles[1],size=14)
-            self.c1.set_xlabel(self.titles[0],size=14)
-            self.c1.set_ylabel(r'Ratio',size=14)
-        else:
-            self.plt.xlabel(self.titles[0],size=14)
-            self.plt.ylabel(self.titles[1],size=14)
-
+        if int(asi + awip + ai) > 1:
+            raise err('you can only choose one of the keywords si, awip, ai to be true')
+                
         if asi:
             self.text(.02,.92,'ATLAS',style='italic',size=14)
             self.text(.12,.92,'Simulation Internal',size=14)
+
+        if awip:
+            self.text(.02,.92,'ATLAS',style='italic',size=14)
+            self.text(.12,.92,'Work in Progress',size=14)
+
+        if ai:
+            self.text(.02,.92,'ATLAS',style='italic',size=14)
+            self.text(.12,.92,'Internal',size=14)
             
         if legend:
             self.c0.legend(loc='best',numpoints=1,fontsize=legendfontsize)
             
         if save:
             self.plt.savefig(save)
-        self.plt.show()
+        
+        if show:
+            self.plt.show()
+        else:
+            pass
 
 class unbinned_object(object):
     def __init__(self,obj,objtype='TGraph'):
