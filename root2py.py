@@ -20,19 +20,23 @@ class plot_base(object):
         super(plot_base,self).__init__()
         
         self.plt = plt
-
+        
         if 'xlim' in kwargs:
             self.xlim = kwargs.get('xlim')
             if type(self.xlim) is not type([0,0]) or len(self.xlim) != 2:
-                raise err('xlim must be a two element list')
+                if self.xlim != False:
+                    raise err('xlim must be a two element list')
         else:
             self.xlim = False
+            
         if 'ylim' in kwargs:
             self.ylim = kwargs.get('ylim')
             if type(self.ylim) is not type([0,0]) or len(self.ylim) != 2:
-                raise err('ylim must be a two element list')
+                if self.ylim != False:
+                    raise err('ylim must be a two element list')
         else:
             self.ylim = False
+            
         if 'titles' in kwargs:
             self.titles = kwargs.get('titles')
             if type(self.titles) is not type(['a','b']) or len(self.titles) != 2:
@@ -203,18 +207,18 @@ class multi_hist(plot_base):
 
         if int(asi + awip + ai) > 1:
             raise err('you can only choose one of the keywords si, awip, ai to be true')
-                
+
+        pa   = lambda s     : self.text(.02,.92,'ATLAS',style='italic',size=s)
+        psup = lambda st, s : self.text(.12,.92,st,size=s)
+        
         if asi:
-            self.text(.02,.92,'ATLAS',style='italic',size=14)
-            self.text(.12,.92,'Simulation Internal',size=14)
+            pa(14), psup('Simulation Internal',14)
 
         if awip:
-            self.text(.02,.92,'ATLAS',style='italic',size=14)
-            self.text(.12,.92,'Work in Progress',size=14)
+            pa(14), psup('Work in Progress',14)
 
         if ai:
-            self.text(.02,.92,'ATLAS',style='italic',size=14)
-            self.text(.12,.92,'Internal',size=14)
+            pa(14), psup('Internal',14)
             
         if legend:
             self.c0.legend(loc='best',numpoints=1,fontsize=legendfontsize)

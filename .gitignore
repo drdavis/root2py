@@ -1,2 +1,3 @@
 *.pyc
 unit_tests/*.eps
+unit_tests/*.pdf
