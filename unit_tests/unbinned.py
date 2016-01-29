@@ -9,7 +9,8 @@ y = x*x
 
 tg = ROOT.TGraph(x.size,x,y)
 
-uo = root2py.single_tgraph(tg,objtype='TGraph')
+uo = root2py.single_tgraph(tg,objtype='TGraph',titles=[r'$x$',r'$y$'],
+                           xlim=[-30,30],ylim=[-10,1000])
 
 print uo.x
 

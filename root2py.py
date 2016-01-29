@@ -53,12 +53,15 @@ class binned_object(object):
     Members
     -------
 
-    contents:     the height of each bin
-    error:       the error of each bin
-    edges:   the bin edges |____|____|____|___..
-                              [0]  [1]  [2]  [3]     
-    centers: the centers of each bin |_____|_____|_____|__...
-                                           [0]   [1]   [2]
+    contents: the height of each bin
+
+    error:    the error of each bin height
+
+    edges:    the bin edges |____|____|____|___..
+                           [0]  [1]  [2]  [3]     
+
+    centers:  the centers of each bin |_____|_____|_____|__...
+                                        [0]   [1]   [2]
 
     """
     def __init__(self,hist):
@@ -95,8 +98,8 @@ class single_hist(plot_base):
         if self.ylim:
             self.plt.ylim(self.ylim)
 
-        self.plt.xlabel(self.titles[0])
-        self.plt.ylabel(self.titles[1])
+        self.plt.xlabel(self.titles[0],size=14)
+        self.plt.ylabel(self.titles[1],size=14)
             
         if save:
             self.plt.savefig(save)
@@ -142,7 +145,6 @@ class multi_hist(plot_base):
         else:
             self.c0 = self.plt
 
-
     def text(self,x,y,line,style=None,size=12,manualcoords=False):
         if self.ratio:
             if not manualcoords:
@@ -153,7 +155,7 @@ class multi_hist(plot_base):
             print 'Warning: multi_hist.text is only available when plotting with a ratio\n'\
                 + '\t add text manually through the plt handle'
             
-    def draw(self,save=None,legend=True,legendfontsize=12):
+    def draw(self,save=None,legend=True,legendfontsize=12,asi=False):
 
         if self.scatter == False:
             self.c0.hist(self.centers,bins=self.edges[0],weights=self.contents,
@@ -183,17 +185,22 @@ class multi_hist(plot_base):
                 self.c0.xlim(self.xlim)
         if self.ylim:
             if self.ratio:
-                self.c0.set_ylim(self.xlim)
+                self.c0.set_ylim(self.ylim)
             else:
                 self.c0.ylim(self.ylim)
 
         if self.ratio:
-            self.c0.set_ylabel(self.titles[1])
-            self.c1.set_xlabel(self.titles[0])
+            self.c0.set_ylabel(self.titles[1],size=14)
+            self.c1.set_xlabel(self.titles[0],size=14)
+            self.c1.set_ylabel(r'Ratio',size=14)
         else:
-            self.plt.xlabel(self.titles[0])
-            self.plt.ylabel(self.titles[1])
+            self.plt.xlabel(self.titles[0],size=14)
+            self.plt.ylabel(self.titles[1],size=14)
 
+        if asi:
+            self.text(.02,.92,'ATLAS',style='italic',size=14)
+            self.text(.12,.92,'Simulation Internal',size=14)
+            
         if legend:
             self.c0.legend(loc='best',numpoints=1,fontsize=legendfontsize)
             
@@ -222,4 +229,15 @@ class single_tgraph(plot_base):
 
     def draw(self,save=None):
         self.plt.plot(self.x,self.y,'bo')
+
+        if self.xlim:
+            self.plt.xlim(self.xlim)
+        if self.ylim:
+            self.plt.ylim(self.ylim)
+
+        self.plt.xlabel(self.titles[0])
+        self.plt.ylabel(self.titles[1])
+            
+        if save:
+            self.plt.savefig(save)
         self.plt.show()
