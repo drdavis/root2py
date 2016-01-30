@@ -113,7 +113,7 @@ class multi_hist(plot_base):
     """
     A set of histograms on a single canvas
     """
-    def __init__(self,hists,histtype='stepfilled',stacked=False,
+    def __init__(self,hists,histtype='stepfilled',figsize=(8.5,6),stacked=False,
                  scatter=False,data=None,ratio=None,**kwargs):
         super(multi_hist,self).__init__(**kwargs)
         self.bos = [binned_object(h) for h in hists]
@@ -137,27 +137,25 @@ class multi_hist(plot_base):
         if len(self.bos) != len(self.colors) or len(self.bos) != len(self.histlabels):
             raise err('colors and histlabels must have length equal the number of histograms')
 
+        self.fig = self.plt.figure(figsize=figsize)
+
         if self.ratio:
-            self.fig = self.plt.figure(figsize=(9,6))
-            self.gs  = gsc.GridSpec(2,1,height_ratios=[3,1])
+            self.gs  = gsc.GridSpec(2,1,height_ratios=[3.25,1])
             self.gs.update(hspace=0.075)
-            self.ax0 = self.plt.subplot(self.gs[0])
-            self.ax1 = self.plt.subplot(self.gs[1],sharex=self.ax0)
+            self.ax0 = self.fig.add_subplot(self.gs[0])
+            self.ax1 = self.fig.add_subplot(self.gs[1],sharex=self.ax0)
             setp(self.ax0.get_xticklabels(),visible=False)
             self.c0 = self.ax0
             self.c1 = self.ax1
         else:
-            self.c0 = self.plt
+            self.ax0 = self.fig.add_subplot(111)
+            self.c0  = self.ax0
 
     def text(self,x,y,line,style=None,size=12,manualcoords=False):
-        if self.ratio:
-            if not manualcoords:
-                self.c0.text(x,y,line,transform=self.c0.transAxes,style=style,size=size)
-            else:
-                self.c0.text(x,y,line,style=style,size=size)
+        if not manualcoords:
+            self.c0.text(x,y,line,transform=self.c0.transAxes,style=style,size=size)
         else:
-            print 'Warning: multi_hist.text is only available when plotting with a ratio\n'\
-                + '\t add text manually through the plt handle'
+            self.c0.text(x,y,line,style=style,size=size)
             
     def draw(self,show=True,save=None,legend=True,legendfontsize=12,
              asi=False,awip=False,ai=False):

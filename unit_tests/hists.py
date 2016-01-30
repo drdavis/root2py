@@ -25,7 +25,6 @@ def check_single_hist():
                             ylim=[-100,1000],
                             titles=['a','b'],
                             color='green')
-
     m.draw(save='ok.eps')
 
 
@@ -37,7 +36,7 @@ def check_multi_hist():
                            stacked=False,
                            data=None,
                            scatter=False,ratio=hist3)
-    #m.text(.05,.9,'testtext',style='italic')
+    m.text(.05,.6,'testtext',style='italic')
     m.draw(awip=True)
     
 check_plot_base()
