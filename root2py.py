@@ -209,16 +209,10 @@ class multi_hist(plot_base):
             raise err('you can only choose one of the keywords si, awip, ai to be true')
 
         pa   = lambda s     : self.text(.02,.92,'ATLAS',style='italic',size=s)
-        psup = lambda st, s : self.text(.12,.92,st,size=s)
-        
-        if asi:
-            pa(14), psup('Simulation Internal',14)
-
-        if awip:
-            pa(14), psup('Work in Progress',14)
-
-        if ai:
-            pa(14), psup('Internal',14)
+        psup = lambda st, s : self.text(.12,.92,st,size=s)        
+        if asi:  pa(14), psup('Simulation Internal',14)
+        if awip: pa(14), psup('Work in Progress',14)
+        if ai:   pa(14), psup('Internal',14)
             
         if legend:
             self.c0.legend(loc='best',numpoints=1,fontsize=legendfontsize)
