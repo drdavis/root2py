@@ -130,12 +130,13 @@ class multi_hist(plot_base):
         self.edges = [bo.edges for bo in self.bos]
         self.centers = [bo.centers for bo in self.bos]
         self.colors = kwargs.get('colors')
+        self.fmts = kwargs.get('fmts')
         self.histtype = histtype
         self.scatter = scatter
         self.histlabels = kwargs.get('histlabels')
         self.stacked = stacked
-        if len(self.bos) != len(self.colors) or len(self.bos) != len(self.histlabels):
-            raise err('colors and histlabels must have length equal the number of histograms')
+        if len(self.bos) != len(self.colors) or len(self.bos) != len(self.histlabels) or len(self.fmts) != len(self.bos):
+            raise err('colors, fmts, and histlabels must have length equal the number of histograms')
 
         self.fig = self.plt.figure(figsize=figsize)
 
@@ -157,7 +158,7 @@ class multi_hist(plot_base):
         else:
             self.c0.text(x,y,line,style=style,size=size)
             
-    def draw(self,show=True,save=None,legend=True,legendfontsize=12,
+    def draw(self,show=True,save=None,legend=True,legendloc='best',legendfontsize=12,
              asi=False,awip=False,ai=False):
 
         if self.scatter == False:
@@ -169,11 +170,12 @@ class multi_hist(plot_base):
                 self.c0.errorbar(self.centers[i],
                                  self.contents[i],
                                  yerr=self.errors[i],
-                                 fmt='o',color=self.colors[i],label=self.histlabels[i])
+                                 fmt=self.fmts[i],color=self.colors[i],
+                                 label=self.histlabels[i])
             
         if self.data:
             self.c0.errorbar(self.data.centers,self.data.contents,
-                             fmt='ko',yerr=self.data.error)
+                             fmt='ko',yerr=self.data.error,label='Data')
         else:
             pass
 
@@ -196,12 +198,12 @@ class multi_hist(plot_base):
             if self.ratio:
                 self.c1.set_xlim(self.xlim)
             else:
-                self.c0.xlim(self.xlim)
+                self.c0.set_xlim(self.xlim)
         if self.ylim:
             if self.ratio:
                 self.c0.set_ylim(self.ylim)
             else:
-                self.c0.ylim(self.ylim)
+                self.c0.set_ylim(self.ylim)
 
         if int(asi + awip + ai) > 1:
             raise err('you can only choose one of the keywords si, awip, ai to be true')
@@ -213,7 +215,7 @@ class multi_hist(plot_base):
         if ai:   pa(14), psup('Internal',14)
             
         if legend:
-            self.c0.legend(loc='best',numpoints=1,fontsize=legendfontsize)
+            self.c0.legend(loc=legendloc,numpoints=1,fontsize=legendfontsize)
             
         if save:
             self.plt.savefig(save)
