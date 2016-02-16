@@ -125,6 +125,10 @@ class multi_hist(plot_base):
             self.ratio = binned_object(ratio)
         else:
             self.ratio = None
+        if 'ratiotitle' in kwargs:
+            self.ratiotitle = kwargs.get('ratiotitle')
+        else:
+            self.ratiotitle = 'Ratio'
         self.contents = [bo.contents for bo in self.bos]
         self.errors = [bo.error for bo in self.bos]
         self.edges = [bo.edges for bo in self.bos]
@@ -187,7 +191,7 @@ class multi_hist(plot_base):
 
             self.c0.set_ylabel(self.titles[1],size=14)
             self.c1.set_xlabel(self.titles[0],size=14)
-            self.c1.set_ylabel(r'Ratio',size=14)
+            self.c1.set_ylabel(self.ratiotitle,size=14)
             self.c1.yaxis.set_major_locator(self.plt.MaxNLocator(max_yticks))
 
         else:
