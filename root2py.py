@@ -114,7 +114,7 @@ class multi_hist(plot_base):
     A set of histograms on a single canvas
     """
     def __init__(self,hists,histtype='stepfilled',figsize=(8.5,6),stacked=False,
-                 scatter=False,data=None,ratio=None,**kwargs):
+                 scatter=False,normed=False,data=None,ratio=None,linewidth=1,**kwargs):
         super(multi_hist,self).__init__(**kwargs)
         self.bos = [binned_object(h) for h in hists]
         if data:
@@ -136,6 +136,8 @@ class multi_hist(plot_base):
         self.colors = kwargs.get('colors')
         self.fmts = kwargs.get('fmts')
         self.histtype = histtype
+        self.linewidth = linewidth
+        self.normed = normed
         self.scatter = scatter
         self.histlabels = kwargs.get('histlabels')
         self.stacked = stacked
@@ -167,8 +169,8 @@ class multi_hist(plot_base):
 
         if self.scatter == False:
             self.c0.hist(self.centers,bins=self.edges[0],weights=self.contents,
-                         label=self.histlabels,color=self.colors,
-                         histtype=self.histtype,stacked=self.stacked)
+                         label=self.histlabels,color=self.colors,normed=self.normed,
+                         histtype=self.histtype,stacked=self.stacked,linewidth=self.linewidth)
         else:
             for i in xrange(len(self.bos)):
                 self.c0.errorbar(self.centers[i],
