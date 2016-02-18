@@ -141,7 +141,8 @@ class multi_hist(plot_base):
         self.scatter = scatter
         self.histlabels = kwargs.get('histlabels')
         self.stacked = stacked
-        if len(self.bos) != len(self.colors) or len(self.bos) != len(self.histlabels) or len(self.fmts) != len(self.bos):
+        reqlen = len(self.bos)
+        if reqlen != len(self.colors) or reqlen != len(self.histlabels) or len(self.fmts) != reqlen:
             raise err('colors, fmts, and histlabels must have length equal the number of histograms')
 
         self.fig = self.plt.figure(figsize=figsize)
@@ -264,3 +265,29 @@ class single_tgraph(plot_base):
         if save:
             self.plt.savefig(save)
         self.plt.show()
+
+def fill_ratio(ratio,numer,denom):
+    """ Fill a ratio histogram with standard error propagation. """
+    vals = []
+    errs = []
+    for i in xrange(ratio.GetNbinsX()):
+        j = i+1
+        dv = denom.GetBinContent(j)
+        nv = numer.GetBinContent(j)
+        de = denom.GetBinError(j)
+        ne = numer.GetBinError(j)
+        if dv == 0:
+            ratio.SetBinContent(j,0.0)
+            ratio.SetBinError(j,0.0)
+            vals.append(0.0)
+            errs.append(0.0)
+        else:
+            newv  = float(nv)/float(dv)
+            term1 = np.power(float(ne)/float(dv),2)
+            term2 = np.power(float(de*nv)/float(dv*dv),2)
+            newe  = np.sqrt(term1+term2)
+            ratio.SetBinContent(j,newv)
+            ratio.SetBinError(j,newe)
+            vals.append(newv)
+            errs.append(newe)
+    return np.vstack([vals,errs]).T
