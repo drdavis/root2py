@@ -52,7 +52,7 @@ class binned_object(object):
     The general form of the numpy arrays which
     contain the bin centers, bin edges, bin contents
     (heights), and contents errors, is used througout
-    other root2py classes.
+    other rootplotlib classes.
     
     Members
     -------
