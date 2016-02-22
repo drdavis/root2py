@@ -215,8 +215,8 @@ class multi_hist(plot_base):
         if int(asi + awip + ai) > 1:
             raise err('you can only choose one of the keywords si, awip, ai to be true')
 
-        pa   = lambda s     : self.text(.02,.92,'ATLAS',style='italic',size=s)
-        psup = lambda st, s : self.text(.12,.92,st,size=s)        
+        pa   = lambda s     : self.text(.02, .92,'ATLAS',style='italic',size=s)
+        psup = lambda st, s : self.text(.125,.92,st,size=s)
         if asi:  pa(14), psup('Simulation Internal',14)
         if awip: pa(14), psup('Work in Progress',14)
         if ai:   pa(14), psup('Internal',14)
@@ -291,3 +291,16 @@ def fill_ratio(ratio,numer,denom):
             vals.append(newv)
             errs.append(newe)
     return np.vstack([vals,errs]).T
+
+def profile_pair(prof1,prof2,colors=['orange','blue'],fmts=['o','o'],
+                 histlabels=['p1','p2'],xtitle='xtitle',ytitle='ytitle',
+                 xlim=[0,10],ylim=[0,10],ratiotitle='ratio',legendloc='upper right',
+                 asi=False,awip=False,ai=False,save=None,extratext=None):
+    ratio = ROOT.TH1D('ratio','',prof1.GetNbinsX(),prof1.GetBinLowEdge(1),
+                      prof1.GetBinLowEdge(prof1.GetNbinsX()+1))
+    fill_ratio(ratio,prof1,prof2)
+    rplplot = multi_hist([prof1,prof2],colors=colors,scatter=True,ratio=ratio,
+                         fmts=fmts,histlabels=histlabels,ratiotitle=ratiotitle,
+                         titles=[xtitle,ytitle],xlim=xlim,ylim=ylim)
+    if extratext: rplplot.text(.015,.85,extratext)
+    rplplot.draw(asi=asi,awip=awip,ai=ai,save=save,legendloc=legendloc)
