@@ -10,13 +10,13 @@ rand = TRandom(0)
 #Make TCanvas+TH2D
 c1 = ROOT.TCanvas()
 c1.cd()
-th2d = ROOT.TH2D("th",";;",19,0,1,13,0,1)
+th2d = ROOT.TH2D("th",";;",11,0,1,10,0,1)
 
 
 #Fill with TRandom data
 for i in xrange(1000):
-    th2d.Fill(rand.Gaus(0.5,0.2),
-              rand.Gaus(0.5,0.2))
+    th2d.Fill(rand.Gaus(0.5,0.3),
+              rand.Gaus(0.5,0.3))
 
 #Draw TH2D
 th2d.Draw("COLZ")
@@ -27,7 +27,10 @@ c1.Update()
 data  = np.frombuffer(th2d.GetArray(),count=th2d.GetSize())
 
 #split the data on Y
-data  = np.split(data,th2d.GetNbinsY()+2)
+data  = np.array(np.split(data,th2d.GetNbinsY()+2))
+
+#remove overflow/underflow
+data = data[1:-1,1:-1]
 
 #draw in pyplot
 fig,ax = plt.subplots(figsize=(10,6))
@@ -40,8 +43,8 @@ ax.xaxis.set_ticks_position('bottom')
 
 #Set the XTicks to be the same as default on TCanvas
 nticks = float(3.0)
-nbinsx = th2d.GetNbinsX()+2
-nbinsy = th2d.GetNbinsY()+2
+nbinsx = th2d.GetNbinsX()
+nbinsy = th2d.GetNbinsY()
 
 ax.set_xticks(np.arange(0,nbinsx,nticks))
 ax.set_yticks(np.arange(0,nbinsy,nticks))
