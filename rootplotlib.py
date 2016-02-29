@@ -17,6 +17,13 @@ class err(Exception):
         return repr(self.value)
 
 class plot_base(object):
+    """
+    A base class for all plotting classes
+    includes some attributes shared among any plot, including:
+    xlim ([x_min,x_max])
+    ylim ([y_min,y_max])
+    titles ([xtitle,ytitle])
+    """
     def __init__(self,**kwargs):
         super(plot_base,self).__init__()
         
@@ -86,8 +93,11 @@ class binned_object(object):
 
 class single_hist(plot_base):
     """
-    A single histogram.
-    
+    A single histogram. This outputs a simple figure with just one
+    histogram. The user only need supply the ROOT object.
+    Optional arguments include:
+    color
+    histtype
     """
     def __init__(self,roothist,color='blue',histtype='step',**kwargs):
         super(single_hist,self).__init__(**kwargs)
@@ -113,6 +123,9 @@ class single_hist(plot_base):
 class multi_hist(plot_base):
     """
     A set of histograms on a single canvas
+    A set of multiple histograms on in a single
+    figure with the ability to stack them and include a ratio.
+    This class also supports TProfile like objects wit the "scatter" flag.
     """
     def __init__(self,hists,histtype='stepfilled',figsize=(8.5,6),stacked=False,
                  scatter=False,normed=False,data=None,ratio=None,linewidth=1,**kwargs):
@@ -234,6 +247,10 @@ class multi_hist(plot_base):
             pass
 
 class unbinned_object(object):
+    """
+    A base class for an object that doesnt include bins, something with
+    just (x,y) points. (e.g. TGraph).
+    """
     def __init__(self,obj,objtype='TGraph'):
         super(unbinned_object,self).__init__()
         if objtype != 'TGraph':
@@ -246,6 +263,10 @@ class unbinned_object(object):
                                                  count=self.root_tgraph.GetN()))).T
 
 class single_tgraph(plot_base):
+    """
+    A single scatter plot of (x,y) values, similar to ROOT's TGraph.
+    The user only needs to give the actual ROOT TGraph.
+    """
     def __init__(self,obj,objtype='TGraph',**kwargs):
         super(single_tgraph,self).__init__(**kwargs)
         self.xy_pairs = unbinned_object(obj,objtype).xy_pairs
@@ -268,6 +289,10 @@ class single_tgraph(plot_base):
         self.plt.show()
 
 class th2d(plot_base):
+    """
+    This class mimics the ROOT TH2D class with the option 'COLZ'.
+    The user need only supply the ROOT object. Other optional args exist.
+    """
     def __init__(self,obj,figsize=(8.5,6),nticks=5,**kwargs):
         super(th2d,self).__init__(**kwargs)
         self.obj = obj
@@ -285,7 +310,7 @@ class th2d(plot_base):
 
         self.nticks = nticks
             
-    def draw(self):
+    def draw(self,save=None,show=True):
         colbar = self.ax0.matshow(self.data,origin='lower',aspect='auto')
         self.ax0.xaxis.set_ticks_position('bottom')
         self.ax0.set_xticks(np.arange(0,self.data.shape[1],1))
@@ -298,9 +323,15 @@ class th2d(plot_base):
         self.ax0.set_yticklabels(np.around(np.linspace(self.bin_widths[1]/2.0,
                                                        self.obj.GetYaxis().GetXmax() - self.bin_widths[1]/2.0,
                                                        self.obj.GetNbinsY()),2))
+
+        self.ax0.set_xlabel(self.titles[0])
+        self.ax0.set_ylabel(self.titles[1])
         
         self.plt.colorbar(colbar)
-        self.plt.show()
+        if show:
+            self.plt.show()
+        if save is not None:
+            self.plt.savefig(save)
         
 def fill_ratio(ratio,numer,denom):
     """ Fill a ratio histogram with standard error propagation. """
@@ -332,6 +363,11 @@ def profile_pair(prof1,prof2,colors=['orange','blue'],fmts=['o','o'],
                  histlabels=['p1','p2'],xtitle='xtitle',ytitle='ytitle',
                  xlim=[0,10],ylim=[0,10],ratiotitle='ratio',legendloc='upper right',
                  asi=False,awip=False,ai=False,save=None,extratext=None):
+    """
+    Given two TProfiles and many other keyword args, a pair of TProfiles with 
+    a ratio can be plotted with essentially a single function call
+    """
+
     ratio = ROOT.TH1D('ratio','',prof1.GetNbinsX(),prof1.GetBinLowEdge(1),
                       prof1.GetBinLowEdge(prof1.GetNbinsX()+1))
     fill_ratio(ratio,prof1,prof2)
