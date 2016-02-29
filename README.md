@@ -14,4 +14,4 @@ Dependencies
 
 Examples
 --------
-Coming soon.
+Please see the [wiki](https://github.com/drdavis/rootplotlib/wiki) !
