@@ -10,7 +10,7 @@ rand = TRandom3(0)
 #Make TCanvas+TH2D
 #c1 = ROOT.TCanvas()
 #c1.cd()
-th2d = ROOT.TH2D("th",";;",10,0,1,10,0,1)
+th2d = ROOT.TH2D("th",";;",15,0,5,10,0,2)
 
 
 #Fill with TRandom data
@@ -42,17 +42,19 @@ cb = ax.matshow(data,origin='lower')
 ax.xaxis.set_ticks_position('bottom')
 
 #Set the XTicks to be the same as default on TCanvas
-nticks = float(1.0)
+nticks = float(10.0)
 nbinsx = th2d.GetNbinsX()
 print nbinsx
 nbinsy = th2d.GetNbinsY()
 
-ax.set_xticks(np.arange(0,nbinsx,nticks))
-ax.set_yticks(np.arange(0,nbinsy,nticks))
+ax.set_xticks(np.arange(0,nbinsx,1))
+ax.set_yticks(np.arange(0,nbinsy,1))
 
 #Set the labels to match whats on TCanvas
-ax.set_xticklabels(np.around(np.arange(0,th2d.GetXaxis().GetXmax(),nticks/nbinsx),2))
-ax.set_yticklabels(np.around(np.arange(0,th2d.GetYaxis().GetXmax(),nticks/nbinsy),2)) #ROOT doesn't have GetYmax lol
+print np.arange(0,nbinsx,nticks)
+print np.around(np.linspace(0,th2d.GetXaxis().GetXmax(),nbinsx),2)
+ax.set_xticklabels(np.around(np.linspace(0,th2d.GetXaxis().GetXmax(),nbinsx),2))
+ax.set_yticklabels(np.around(np.linspace(0,th2d.GetYaxis().GetXmax(),nbinsy),2)) #ROOT doesn't have GetYmax lol
 
 #Z axis like root
 plt.colorbar(cb)

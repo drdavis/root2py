@@ -274,7 +274,8 @@ class th2d(plot_base):
         self.data = np.frombuffer(obj.GetArray(),count=obj.GetSize())
         self.data = np.array(np.split(self.data,obj.GetNbinsY()+2))
         self.data = self.data[1:-1,1:-1]
-        self.bin_width = self.obj.GetXaxis().GetBinWidth(1)
+        self.bin_widths = (self.obj.GetXaxis().GetBinWidth(1),
+                           self.obj.GetYaxis().GetBinWidth(1))
         self.fig, self.ax0 = self.plt.subplots(figsize=figsize)
 
         if not self.xlim:
@@ -285,18 +286,18 @@ class th2d(plot_base):
         self.nticks = nticks
             
     def draw(self):
-        colbar = self.ax0.matshow(self.data,origin='lower')
+        colbar = self.ax0.matshow(self.data,origin='lower',aspect='auto')
         self.ax0.xaxis.set_ticks_position('bottom')
-        self.ax0.set_xticks(np.linspace(0,len(self.data[0]),self.nticks)[:-1])
-        self.ax0.set_yticks(np.linspace(0,len(self.data[1]),self.nticks)[:-1])
+        self.ax0.set_xticks(np.arange(0,self.data.shape[1],1))
+        self.ax0.set_yticks(np.arange(0,self.data.shape[0],1))
 
-        self.ax0.set_xticklabels(np.around(np.linspace(self.xlim[0],
-                                                       self.xlim[1],
-                                                       self.nticks),2))
+        self.ax0.set_xticklabels(np.around(np.linspace(self.bin_widths[0]/2.0,
+                                                       self.obj.GetXaxis().GetXmax() - self.bin_widths[0]/2.0,
+                                                       self.obj.GetNbinsX()),2))
         
-        self.ax0.set_yticklabels(np.around(np.linspace(self.ylim[0],
-                                                       self.ylim[1],
-                                                       self.nticks),2))
+        self.ax0.set_yticklabels(np.around(np.linspace(self.bin_widths[1]/2.0,
+                                                       self.obj.GetYaxis().GetXmax() - self.bin_widths[1]/2.0,
+                                                       self.obj.GetNbinsY()),2))
         
         self.plt.colorbar(colbar)
         self.plt.show()
