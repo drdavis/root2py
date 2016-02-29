@@ -287,14 +287,13 @@ class th2d(plot_base):
     def draw(self):
         colbar = self.ax0.matshow(self.data,origin='lower')
         self.ax0.xaxis.set_ticks_position('bottom')
-
-        self.ax0.set_xticks(np.linspace(0,len(self.data[0]),self.nticks))
-        self.ax0.set_yticks(np.linspace(0,len(self.data[1]),self.nticks))
+        self.ax0.set_xticks(np.linspace(0,len(self.data[0]),self.nticks)[:-1])
+        self.ax0.set_yticks(np.linspace(0,len(self.data[1]),self.nticks)[:-1])
 
         self.ax0.set_xticklabels(np.around(np.linspace(self.xlim[0],
                                                        self.xlim[1],
                                                        self.nticks),2))
-
+        
         self.ax0.set_yticklabels(np.around(np.linspace(self.ylim[0],
                                                        self.ylim[1],
                                                        self.nticks),2))
