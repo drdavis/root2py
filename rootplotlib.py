@@ -7,6 +7,7 @@ from pylab import setp
 
 mpl.rcParams['xtick.labelsize'] = 12
 mpl.rcParams['ytick.labelsize'] = 12
+plt.rcParams['image.cmap']      = 'viridis'
 max_yticks                      = 5
 
 class err(Exception):
@@ -266,6 +267,41 @@ class single_tgraph(plot_base):
             self.plt.savefig(save)
         self.plt.show()
 
+class th2d(plot_base):
+    def __init__(self,obj,figsize=(8.5,6),nticks=5,**kwargs):
+        super(th2d,self).__init__(**kwargs)
+        self.obj = obj
+        self.data = np.frombuffer(obj.GetArray(),count=obj.GetSize())
+        self.data = np.array(np.split(self.data,obj.GetNbinsY()+2))
+        self.data = self.data[1:-1,1:-1]
+        self.bin_width = self.obj.GetXaxis().GetBinWidth(1)
+        self.fig, self.ax0 = self.plt.subplots(figsize=figsize)
+
+        if not self.xlim:
+            err('Must give xlim in th2d')
+        if not self.ylim:
+            err('Must give ylim in th2d')
+
+        self.nticks = nticks
+            
+    def draw(self):
+        colbar = self.ax0.matshow(self.data,origin='lower')
+        self.ax0.xaxis.set_ticks_position('bottom')
+
+        self.ax0.set_xticks(np.linspace(0,len(self.data[0]),self.nticks))
+        self.ax0.set_yticks(np.linspace(0,len(self.data[1]),self.nticks))
+
+        self.ax0.set_xticklabels(np.around(np.linspace(self.xlim[0],
+                                                       self.xlim[1],
+                                                       self.nticks),2))
+
+        self.ax0.set_yticklabels(np.around(np.linspace(self.ylim[0],
+                                                       self.ylim[1],
+                                                       self.nticks),2))
+        
+        self.plt.colorbar(colbar)
+        self.plt.show()
+        
 def fill_ratio(ratio,numer,denom):
     """ Fill a ratio histogram with standard error propagation. """
     vals = []
