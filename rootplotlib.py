@@ -82,14 +82,14 @@ class binned_object(object):
         self._root_hist  = hist
 
         self.contents = np.array([self._root_hist.GetBinContent(i+1)
-                                  for i in xrange(self._root_hist.GetNbinsX())])
+                                  for i in range(self._root_hist.GetNbinsX())])
         self.error    = np.array([self._root_hist.GetBinError(i+1)
-                                  for i in xrange(self._root_hist.GetNbinsX())])
+                                  for i in range(self._root_hist.GetNbinsX())])
         self.edges    = np.array([self._root_hist.GetXaxis().GetBinLowEdge(i+1)
-                                  for i in xrange(self._root_hist.GetNbinsX()+1)])
+                                  for i in range(self._root_hist.GetNbinsX()+1)])
         self.centers  = np.array([(self._root_hist.GetXaxis().GetBinWidth(i+1)*0.5 +
                                    self._root_hist.GetXaxis().GetBinLowEdge(i+1))
-                                  for i in xrange(self._root_hist.GetNbinsX())])
+                                  for i in range(self._root_hist.GetNbinsX())])
 
 class single_hist(plot_base):
     """
@@ -187,7 +187,7 @@ class multi_hist(plot_base):
                          label=self.histlabels,color=self.colors,normed=self.normed,
                          histtype=self.histtype,stacked=self.stacked,linewidth=self.linewidth)
         else:
-            for i in xrange(len(self.bos)):
+            for i in range(len(self.bos)):
                 self.c0.errorbar(self.centers[i],
                                  self.contents[i],
                                  yerr=self.errors[i],
@@ -204,7 +204,7 @@ class multi_hist(plot_base):
             self.c1.errorbar(self.ratio.centers,self.ratio.contents,
                              fmt='ko',yerr=self.ratio.error)
             self.c1.plot(np.linspace(self.edges[0][0],self.edges[0][-1],100),
-                         np.array([1 for i in xrange(100)]),'k--')
+                         np.array([1 for i in range(100)]),'k--')
 
             self.c0.set_ylabel(self.titles[1],size=14)
             self.c1.set_xlabel(self.titles[0],size=14)
@@ -337,7 +337,7 @@ def fill_ratio(ratio,numer,denom):
     """ Fill a ratio histogram with standard error propagation. """
     vals = []
     errs = []
-    for i in xrange(ratio.GetNbinsX()):
+    for i in range(ratio.GetNbinsX()):
         j = i+1
         dv = denom.GetBinContent(j)
         nv = numer.GetBinContent(j)
