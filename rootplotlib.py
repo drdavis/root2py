@@ -362,7 +362,7 @@ def fill_ratio(ratio,numer,denom):
 def profile_pair(prof1,prof2,colors=['orange','blue'],fmts=['o','o'],
                  histlabels=['p1','p2'],xtitle='xtitle',ytitle='ytitle',
                  xlim=[0,10],ylim=[0,10],ratiotitle='ratio',legendloc='upper right',
-                 asi=False,awip=False,ai=False,save=None,extratext=None):
+                 asi=False,awip=False,ai=False,save=None,extratext=None,show=True):
     """
     Given two TProfiles and many other keyword args, a pair of TProfiles with 
     a ratio can be plotted with essentially a single function call
@@ -375,4 +375,4 @@ def profile_pair(prof1,prof2,colors=['orange','blue'],fmts=['o','o'],
                          fmts=fmts,histlabels=histlabels,ratiotitle=ratiotitle,
                          titles=[xtitle,ytitle],xlim=xlim,ylim=ylim)
     if extratext: rplplot.text(.015,.85,extratext)
-    rplplot.draw(asi=asi,awip=awip,ai=ai,save=save,legendloc=legendloc)
+    rplplot.draw(asi=asi,awip=awip,ai=ai,save=save,legendloc=legendloc,show=show)
