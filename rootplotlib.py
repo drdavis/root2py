@@ -7,6 +7,7 @@ from pylab import setp
 
 mpl.rcParams['xtick.labelsize'] = 12
 mpl.rcParams['ytick.labelsize'] = 12
+mpl.rcParams['font.family']     = 'serif'
 plt.rcParams['image.cmap']      = 'viridis'
 max_yticks                      = 5
 
