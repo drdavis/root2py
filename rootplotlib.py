@@ -377,3 +377,18 @@ def profile_pair(prof1,prof2,colors=['orange','blue'],fmts=['o','o'],
                          titles=[xtitle,ytitle],xlim=xlim,ylim=ylim)
     if extratext: rplplot.text(.015,.85,extratext)
     rplplot.draw(asi=asi,awip=awip,ai=ai,save=save,legendloc=legendloc,show=show)
+
+def hist_set(data,histlist,colors,labels,fmts,xtitle='x',ytitle='y',
+             xlim=[0,10],ylim=[0,10],ratiotitle='ratio',
+             save=None,extratext=None,show=True,stacked=True,ai=False):
+    stack = ROOT.THStack('stack','stack')
+    for h in histlist:
+        stack.Add(h)
+    ratio = ROOT.TH1D('ratio','',histlist[0].GetNbinsX(),histlist[0].GetBinLowEdge(1),
+                      histlist[0].GetBinLowEdge(histlist[0].GetNbinsX()+1))
+    fill_ratio(ratio,data,stack.GetStack().Last())
+    rplplot = multi_hist(histlist,colors=colors,ratio=ratio,fmts=fmts,histlabels=labels,
+                         ratiotitle=ratiotitle,titles=[xtitle,ytitle],
+                         xlim=xlim,ylim=ylim,data=data,stacked=stacked)
+    if extratext: rplplot.text(.015,.85,extratext)
+    rplplot.draw(save=save,show=show,ai=ai)
