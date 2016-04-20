@@ -5,11 +5,42 @@ import matplotlib as mpl
 import matplotlib.gridspec as gsc
 from pylab import setp
 
+from matplotlib.ticker import AutoMinorLocator, MultipleLocator
+
+STYLE = mpl.rcParams
+
 mpl.rcParams['xtick.labelsize'] = 12
 mpl.rcParams['ytick.labelsize'] = 12
 mpl.rcParams['font.family']     = 'serif'
+#mpl.rcParams['font.family']     = 'stixsans'
+STYLE['mathtext.fontset'] = 'stixsans'
+#STYLE['mathtext.default'] = 'rm'
+#mpl.rcParams['font.sans-serif'] = 'helvetica, Helvetica, Nimbus Sans L, Mukti Narrow, FreeSans'
+
+mpl.rcParams['figure.facecolor'] = 'white'
+mpl.rcParams['figure.subplot.bottom'] = 0.16
+mpl.rcParams['figure.subplot.top'] = 0.95
+mpl.rcParams['figure.subplot.left'] = 0.16
+mpl.rcParams['figure.subplot.right'] = 0.95
+
+# axes
+mpl.rcParams['axes.labelsize'] = 14
+mpl.rcParams['xtick.labelsize'] = 11
+mpl.rcParams['xtick.major.size'] = 8
+mpl.rcParams['xtick.minor.size'] = 4
+mpl.rcParams['ytick.labelsize'] = 11
+mpl.rcParams['ytick.major.size'] = 8
+mpl.rcParams['ytick.minor.size'] = 4
+mpl.rcParams['lines.markersize'] = 6
+
+# legend
+mpl.rcParams['legend.numpoints'] = 1
+mpl.rcParams['legend.fontsize'] = 19
+mpl.rcParams['legend.labelspacing'] = 0.3
+mpl.rcParams['legend.frameon'] = False
+
 plt.rcParams['image.cmap']      = 'viridis'
-max_yticks                      = 5
+max_ratio_yticks                = 5
 
 class err(Exception):
     def __init__(self,value):
@@ -128,7 +159,7 @@ class multi_hist(plot_base):
     figure with the ability to stack them and include a ratio.
     This class also supports TProfile like objects wit the "scatter" flag.
     """
-    def __init__(self,hists,histtype='stepfilled',figsize=(8.5,6),stacked=False,
+    def __init__(self,hists,histtype='stepfilled',figsize=(8.75,5.92),stacked=False,
                  scatter=False,normed=False,data=None,ratio=None,linewidth=1,**kwargs):
         super(multi_hist,self).__init__(**kwargs)
         self.bos = [binned_object(h) for h in hists]
@@ -170,6 +201,11 @@ class multi_hist(plot_base):
             setp(self.ax0.get_xticklabels(),visible=False)
             self.c0 = self.ax0
             self.c1 = self.ax1
+
+            self.c0.xaxis.set_minor_locator(AutoMinorLocator())
+            self.c0.yaxis.set_minor_locator(AutoMinorLocator())
+            #self.c0.yaxis.set_major_locator(MultipleLocator(20))
+            
         else:
             self.ax0 = self.fig.add_subplot(111)
             self.c0  = self.ax0
@@ -181,7 +217,7 @@ class multi_hist(plot_base):
             self.c0.text(x,y,line,style=style,size=size)
             
     def draw(self,show=True,save=None,legend=True,legendloc='best',legendfontsize=12,
-             asi=False,awip=False,ai=False):
+             asi=False,awip=False,ai=False,eventsperbinsize=False,titleunit=''):
 
         if self.scatter == False:
             self.c0.hist(self.centers,bins=self.edges[0],weights=self.contents,
@@ -207,10 +243,16 @@ class multi_hist(plot_base):
             self.c1.plot(np.linspace(self.edges[0][0],self.edges[0][-1],100),
                          np.array([1 for i in range(100)]),'k--')
 
-            self.c0.set_ylabel(self.titles[1],size=14)
+            if eventsperbinsize:
+                bin_width = str(round(self.edges[0][1] - self.edges[0][0],2))
+                epbs_ytitle = 'Events/'+bin_width+' '+titleunit
+                self.c0.set_ylabel(epbs_ytitle,size=14)
+            else:
+                self.c0.set_ylabel(self.titles[1],size=14)
+
             self.c1.set_xlabel(self.titles[0],size=14)
             self.c1.set_ylabel(self.ratiotitle,size=14)
-            self.c1.yaxis.set_major_locator(self.plt.MaxNLocator(max_yticks))
+            self.c1.yaxis.set_major_locator(self.plt.MaxNLocator(max_ratio_yticks))
 
         else:
             self.plt.xlabel(self.titles[0],size=14)
@@ -231,7 +273,7 @@ class multi_hist(plot_base):
             raise err('you can only choose one of the keywords si, awip, ai to be true')
 
         pa   = lambda s     : self.text(.02, .92,'ATLAS',style='italic',size=s)
-        psup = lambda st, s : self.text(.125,.92,st,size=s)
+        psup = lambda st, s : self.text(.132,.92,st,size=s)
         if asi:  pa(14), psup('Simulation Internal',14)
         if awip: pa(14), psup('Work in Progress',14)
         if ai:   pa(14), psup('Internal',14)
@@ -294,7 +336,7 @@ class th2d(plot_base):
     This class mimics the ROOT TH2D class with the option 'COLZ'.
     The user need only supply the ROOT object. Other optional args exist.
     """
-    def __init__(self,obj,figsize=(8.5,6),nticks=5,**kwargs):
+    def __init__(self,obj,figsize=(8.75,5.92),nticks=5,**kwargs):
         super(th2d,self).__init__(**kwargs)
         self.obj = obj
         self.data = np.frombuffer(obj.GetArray(),count=obj.GetSize())
@@ -380,7 +422,8 @@ def profile_pair(prof1,prof2,colors=['orange','blue'],fmts=['o','o'],
 
 def hist_set(data,histlist,colors,labels,fmts,xtitle='x',ytitle='y',
              xlim=[0,10],ylim=[0,10],ratiotitle='ratio',
-             save=None,extratext=None,show=True,stacked=True,ai=False):
+             save=None,extratext=None,show=True,stacked=True,ai=False,
+             eventsperbinsize=True,titleunit=''):
     stack = ROOT.THStack('stack','stack')
     for h in histlist:
         stack.Add(h)
@@ -391,4 +434,4 @@ def hist_set(data,histlist,colors,labels,fmts,xtitle='x',ytitle='y',
                          ratiotitle=ratiotitle,titles=[xtitle,ytitle],
                          xlim=xlim,ylim=ylim,data=data,stacked=stacked)
     if extratext: rplplot.text(.015,.85,extratext)
-    rplplot.draw(save=save,show=show,ai=ai)
+    rplplot.draw(save=save,show=show,ai=ai,eventsperbinsize=eventsperbinsize,titleunit=titleunit)
