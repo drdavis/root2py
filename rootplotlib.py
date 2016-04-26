@@ -7,14 +7,22 @@ from pylab import setp
 
 from matplotlib.ticker import AutoMinorLocator, MultipleLocator
 
-STYLE = mpl.rcParams
+from matplotlib.font_manager import FontProperties
+font0 = FontProperties()
+alignment = {'horizontalalignment': 'center', 'verticalalignment': 'baseline'}
+# Show family options
+font = font0.copy()
+font.set_style('italic')
+font.set_weight('bold')
+#font.set_size('x-small')
 
-mpl.rcParams['xtick.labelsize'] = 12
-mpl.rcParams['ytick.labelsize'] = 12
-mpl.rcParams['font.family']     = 'serif'
+families = ['serif', 'sans-serif', 'cursive', 'fantasy', 'monospace']
+mpl.rcParams['xtick.labelsize'] = 16
+mpl.rcParams['ytick.labelsize'] = 16
+#mpl.rcParams['font.family']     = 'serif'
 #mpl.rcParams['font.family']     = 'stixsans'
-STYLE['mathtext.fontset'] = 'stixsans'
-#STYLE['mathtext.default'] = 'rm'
+mpl.rcParams['mathtext.fontset'] = 'stixsans'
+#mpl.rcParams['mathtext.default'] = 'rm'
 #mpl.rcParams['font.sans-serif'] = 'helvetica, Helvetica, Nimbus Sans L, Mukti Narrow, FreeSans'
 
 mpl.rcParams['figure.facecolor'] = 'white'
@@ -24,18 +32,18 @@ mpl.rcParams['figure.subplot.left'] = 0.16
 mpl.rcParams['figure.subplot.right'] = 0.95
 
 # axes
-mpl.rcParams['axes.labelsize'] = 14
-mpl.rcParams['xtick.labelsize'] = 11
+mpl.rcParams['axes.labelsize'] = 18
+mpl.rcParams['xtick.labelsize'] = 14
 mpl.rcParams['xtick.major.size'] = 8
 mpl.rcParams['xtick.minor.size'] = 4
-mpl.rcParams['ytick.labelsize'] = 11
+mpl.rcParams['ytick.labelsize'] = 14
 mpl.rcParams['ytick.major.size'] = 8
 mpl.rcParams['ytick.minor.size'] = 4
-mpl.rcParams['lines.markersize'] = 6
+mpl.rcParams['lines.markersize'] = 7
 
 # legend
 mpl.rcParams['legend.numpoints'] = 1
-mpl.rcParams['legend.fontsize'] = 19
+mpl.rcParams['legend.fontsize'] = 14
 mpl.rcParams['legend.labelspacing'] = 0.3
 mpl.rcParams['legend.frameon'] = False
 
@@ -145,8 +153,8 @@ class single_hist(plot_base):
         if self.ylim:
             self.plt.ylim(self.ylim)
 
-        self.plt.xlabel(self.titles[0],size=14)
-        self.plt.ylabel(self.titles[1],size=14)
+        self.plt.xlabel(self.titles[0])
+        self.plt.ylabel(self.titles[1])
             
         if save:
             self.plt.savefig(save)
@@ -210,13 +218,21 @@ class multi_hist(plot_base):
             self.ax0 = self.fig.add_subplot(111)
             self.c0  = self.ax0
 
-    def text(self,x,y,line,style=None,size=12,manualcoords=False):
+    def text(self,x,y,line,style=None,size=14,manualcoords=False,specialfont=False):
         if not manualcoords:
-            self.c0.text(x,y,line,transform=self.c0.transAxes,style=style,size=size)
+            if not specialfont:
+                self.c0.text(x,y,line,transform=self.c0.transAxes,style=style,
+                             size=size)
+            else:
+                self.c0.text(x,y,line,transform=self.c0.transAxes,style=style,
+                             size=size,fontproperties=font)
         else:
-            self.c0.text(x,y,line,style=style,size=size)
-            
-    def draw(self,show=True,save=None,legend=True,legendloc='best',legendfontsize=12,
+            if not specialfont:
+                self.c0.text(x,y,line,style=style,size=size)
+            else:
+                self.c0.text(x,y,line,style=style,fontproperties=fontproperties)
+                
+    def draw(self,show=True,save=None,legend=True,legendloc='best',legendfontsize=14,
              asi=False,awip=False,ai=False,eventsperbinsize=False,titleunit=''):
 
         if self.scatter == False:
@@ -246,17 +262,17 @@ class multi_hist(plot_base):
             if eventsperbinsize:
                 bin_width = str(round(self.edges[0][1] - self.edges[0][0],2))
                 epbs_ytitle = 'Events/'+bin_width+' '+titleunit
-                self.c0.set_ylabel(epbs_ytitle,size=14)
+                self.c0.set_ylabel(epbs_ytitle)
             else:
-                self.c0.set_ylabel(self.titles[1],size=14)
+                self.c0.set_ylabel(self.titles[1])
 
-            self.c1.set_xlabel(self.titles[0],size=14)
-            self.c1.set_ylabel(self.ratiotitle,size=14)
+            self.c1.set_xlabel(self.titles[0])
+            self.c1.set_ylabel(self.ratiotitle)
             self.c1.yaxis.set_major_locator(self.plt.MaxNLocator(max_ratio_yticks))
 
         else:
-            self.plt.xlabel(self.titles[0],size=14)
-            self.plt.ylabel(self.titles[1],size=14)
+            self.plt.xlabel(self.titles[0])
+            self.plt.ylabel(self.titles[1])
             
         if self.xlim:
             if self.ratio:
@@ -272,11 +288,11 @@ class multi_hist(plot_base):
         if int(asi + awip + ai) > 1:
             raise err('you can only choose one of the keywords si, awip, ai to be true')
 
-        pa   = lambda s     : self.text(.02, .92,'ATLAS',style='italic',size=s)
-        psup = lambda st, s : self.text(.132,.92,st,size=s)
-        if asi:  pa(14), psup('Simulation Internal',14)
-        if awip: pa(14), psup('Work in Progress',14)
-        if ai:   pa(14), psup('Internal',14)
+        pa   = lambda s     : self.text(.02, .92,'ATLAS',size=s,specialfont=True)
+        psup = lambda st, s : self.text(.1445,.92,st,size=s)
+        if asi:  pa(16), psup('Simulation Internal',16)
+        if awip: pa(16), psup('Work in Progress',16)
+        if ai:   pa(16), psup('Internal',16)
             
         if legend:
             self.c0.legend(loc=legendloc,numpoints=1,fontsize=legendfontsize)
@@ -420,9 +436,9 @@ def profile_pair(prof1,prof2,colors=['orange','blue'],fmts=['o','o'],
     if extratext: rplplot.text(.015,.85,extratext)
     rplplot.draw(asi=asi,awip=awip,ai=ai,save=save,legendloc=legendloc,show=show)
 
-def hist_set(data,histlist,colors,labels,fmts,xtitle='x',ytitle='y',
+def hist_set(data,histlist,colors,labels,fmts=[0,0,0,0,0,0,0],xtitle='x',ytitle='y',
              xlim=[0,10],ylim=[0,10],ratiotitle='ratio',
-             save=None,extratext=None,show=True,stacked=True,ai=False,
+             save=None,extratext=None,show=True,stacked=True,ai=False,awip=False,
              eventsperbinsize=True,titleunit=''):
     stack = ROOT.THStack('stack','stack')
     for h in histlist:
@@ -434,4 +450,4 @@ def hist_set(data,histlist,colors,labels,fmts,xtitle='x',ytitle='y',
                          ratiotitle=ratiotitle,titles=[xtitle,ytitle],
                          xlim=xlim,ylim=ylim,data=data,stacked=stacked)
     if extratext: rplplot.text(.015,.85,extratext)
-    rplplot.draw(save=save,show=show,ai=ai,eventsperbinsize=eventsperbinsize,titleunit=titleunit)
+    rplplot.draw(save=save,show=show,ai=ai,eventsperbinsize=eventsperbinsize,titleunit=titleunit,awip=awip)
