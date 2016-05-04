@@ -3,94 +3,39 @@ import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib as mpl
 import matplotlib.gridspec as gsc
+from matplotlib.ticker import AutoMinorLocator, MultipleLocator
 from pylab import setp
 
-from matplotlib.ticker import AutoMinorLocator, MultipleLocator
-
-from matplotlib.font_manager import FontProperties
-font0 = FontProperties()
-alignment = {'horizontalalignment': 'center', 'verticalalignment': 'baseline'}
-# Show family options
-font = font0.copy()
-font.set_style('italic')
-font.set_weight('bold')
-#font.set_size('x-small')
-
 families = ['serif', 'sans-serif', 'cursive', 'fantasy', 'monospace']
-mpl.rcParams['xtick.labelsize'] = 16
-mpl.rcParams['ytick.labelsize'] = 16
-#mpl.rcParams['font.family']     = 'serif'
-#mpl.rcParams['font.family']     = 'stixsans'
-mpl.rcParams['mathtext.fontset'] = 'stixsans'
-#mpl.rcParams['mathtext.default'] = 'rm'
-#mpl.rcParams['font.sans-serif'] = 'helvetica, Helvetica, Nimbus Sans L, Mukti Narrow, FreeSans'
 
-mpl.rcParams['figure.facecolor'] = 'white'
+mpl.rcParams['xtick.labelsize']  = 16
+mpl.rcParams['ytick.labelsize']  = 16
+mpl.rcParams['mathtext.fontset'] = 'stixsans'
+
+mpl.rcParams['figure.facecolor']      = 'white'
 mpl.rcParams['figure.subplot.bottom'] = 0.16
-mpl.rcParams['figure.subplot.top'] = 0.95
-mpl.rcParams['figure.subplot.left'] = 0.16
-mpl.rcParams['figure.subplot.right'] = 0.95
+mpl.rcParams['figure.subplot.top']    = 0.95
+mpl.rcParams['figure.subplot.left']   = 0.16
+mpl.rcParams['figure.subplot.right']  = 0.95
 
 # axes
-mpl.rcParams['axes.labelsize'] = 18
-mpl.rcParams['xtick.labelsize'] = 14
+mpl.rcParams['axes.labelsize']   = 18
+mpl.rcParams['xtick.labelsize']  = 14
 mpl.rcParams['xtick.major.size'] = 8
 mpl.rcParams['xtick.minor.size'] = 4
-mpl.rcParams['ytick.labelsize'] = 14
+mpl.rcParams['ytick.labelsize']  = 14
 mpl.rcParams['ytick.major.size'] = 8
 mpl.rcParams['ytick.minor.size'] = 4
 mpl.rcParams['lines.markersize'] = 7
 
 # legend
-mpl.rcParams['legend.numpoints'] = 1
-mpl.rcParams['legend.fontsize'] = 14
+mpl.rcParams['legend.numpoints']    = 1
+mpl.rcParams['legend.fontsize']     = 14
 mpl.rcParams['legend.labelspacing'] = 0.3
-mpl.rcParams['legend.frameon'] = False
+mpl.rcParams['legend.frameon']      = False
 
-plt.rcParams['image.cmap']      = 'viridis'
-max_ratio_yticks                = 5
-
-class err(Exception):
-    def __init__(self,value):
-        self.value = value
-    def __str__(self):
-        return repr(self.value)
-
-class plot_base(object):
-    """
-    A base class for all plotting classes
-    includes some attributes shared among any plot, including:
-    xlim ([x_min,x_max])
-    ylim ([y_min,y_max])
-    titles ([xtitle,ytitle])
-    """
-    def __init__(self,**kwargs):
-        super(plot_base,self).__init__()
-        
-        self.plt = plt
-        
-        if 'xlim' in kwargs:
-            self.xlim = kwargs.get('xlim')
-            if type(self.xlim) is not type([0,0]) or len(self.xlim) != 2:
-                if self.xlim != False:
-                    raise err('xlim must be a two element list')
-        else:
-            self.xlim = False
-            
-        if 'ylim' in kwargs:
-            self.ylim = kwargs.get('ylim')
-            if type(self.ylim) is not type([0,0]) or len(self.ylim) != 2:
-                if self.ylim != False:
-                    raise err('ylim must be a two element list')
-        else:
-            self.ylim = False
-            
-        if 'titles' in kwargs:
-            self.titles = kwargs.get('titles')
-            if type(self.titles) is not type(['a','b']) or len(self.titles) != 2:
-                raise err('titles must be a two element list')
-        else:
-            self.titles = [' ',' ']
+plt.rcParams['image.cmap'] = 'viridis'
+max_ratio_yticks           = 5
             
 class binned_object(object):
     """     
@@ -118,336 +63,50 @@ class binned_object(object):
     """
     def __init__(self,hist):
         super(binned_object,self).__init__()
-        
-        self._root_hist  = hist
+        self.rhist  = hist
 
-        self.contents = np.array([self._root_hist.GetBinContent(i+1)
-                                  for i in range(self._root_hist.GetNbinsX())])
-        self.error    = np.array([self._root_hist.GetBinError(i+1)
-                                  for i in range(self._root_hist.GetNbinsX())])
-        self.edges    = np.array([self._root_hist.GetXaxis().GetBinLowEdge(i+1)
-                                  for i in range(self._root_hist.GetNbinsX()+1)])
-        self.centers  = np.array([(self._root_hist.GetXaxis().GetBinWidth(i+1)*0.5 +
-                                   self._root_hist.GetXaxis().GetBinLowEdge(i+1))
-                                  for i in range(self._root_hist.GetNbinsX())])
+        self.contents = np.array([self.rhist.GetBinContent(i+1)
+                                  for i in range(self.rhist.GetNbinsX())])
+        self.error    = np.array([self.rhist.GetBinError(i+1)
+                                  for i in range(self.rhist.GetNbinsX())])
+        self.edges    = np.array([self.rhist.GetXaxis().GetBinLowEdge(i+1)
+                                  for i in range(self.rhist.GetNbinsX()+1)])
+        self.centers  = np.array([(self.rhist.GetXaxis().GetBinWidth(i+1)*0.5 +
+                                   self.rhist.GetXaxis().GetBinLowEdge(i+1))
+                                  for i in range(self.rhist.GetNbinsX())])
 
-class single_hist(plot_base):
+
+class hist_stack(object):
     """
-    A single histogram. This outputs a simple figure with just one
-    histogram. The user only need supply the ROOT object.
-    Optional arguments include:
-    color
-    histtype
+    A class to organize a set of histograms to be stacked. Optional to
+    include data and a ratio plot.
     """
-    def __init__(self,roothist,color='blue',histtype='step',**kwargs):
-        super(single_hist,self).__init__(**kwargs)
-        self.bo = binned_object(roothist)
-        self.color = color
-        self.histtype = histtype
-
-    def draw(self,save=None):
-        self.plt.hist(self.bo.centers,bins=self.bo.edges,weights=self.bo.contents,
-                      histtype=self.histtype,color=self.color)
-        if self.xlim:
-            self.plt.xlim(self.xlim)
-        if self.ylim:
-            self.plt.ylim(self.ylim)
-
-        self.plt.xlabel(self.titles[0])
-        self.plt.ylabel(self.titles[1])
-            
-        if save:
-            self.plt.savefig(save)
-        self.plt.show()
-
-class multi_hist(plot_base):
-    """
-    A set of histograms on a single canvas
-    A set of multiple histograms on in a single
-    figure with the ability to stack them and include a ratio.
-    This class also supports TProfile like objects wit the "scatter" flag.
-    """
-    def __init__(self,hists,histtype='stepfilled',figsize=(8.75,5.92),stacked=False,
-                 scatter=False,normed=False,data=None,ratio=None,linewidth=1,**kwargs):
-        super(multi_hist,self).__init__(**kwargs)
-        self.bos = [binned_object(h) for h in hists]
-        if data:
+    def __init__(self,root_hists,data=None,colors=['black' for _ in range(len(root_hists))],
+                 labels=['hist'+str(i) for i in range(len(root_hists))],ratio=None):
+        super(binned_object,self).__init__()
+        self.stack  = [binned_object(hist) for hist in root_hists]
+        self.labels = labels
+        self.colors = colors
+        if data is None:
+            self.data = data
+        else:
             self.data = binned_object(data)
+        if ratio is None:
+            self.ratio = ratio
         else:
-            self.data = None
-        if ratio:
             self.ratio = binned_object(ratio)
-        else:
-            self.ratio = None
-        if 'ratiotitle' in kwargs:
-            self.ratiotitle = kwargs.get('ratiotitle')
-        else:
-            self.ratiotitle = 'Ratio'
-        self.contents = [bo.contents for bo in self.bos]
-        self.errors = [bo.error for bo in self.bos]
-        self.edges = [bo.edges for bo in self.bos]
-        self.centers = [bo.centers for bo in self.bos]
-        self.colors = kwargs.get('colors')
-        self.fmts = kwargs.get('fmts')
-        self.histtype = histtype
-        self.linewidth = linewidth
-        self.normed = normed
-        self.scatter = scatter
-        self.histlabels = kwargs.get('histlabels')
-        self.stacked = stacked
-        reqlen = len(self.bos)
-        if reqlen != len(self.colors) or reqlen != len(self.histlabels) or len(self.fmts) != reqlen:
-            raise err('colors, fmts, and histlabels must have length equal the number of histograms')
-
-        self.fig = self.plt.figure(figsize=figsize)
-
-        if self.ratio:
-            self.gs  = gsc.GridSpec(2,1,height_ratios=[3.25,1])
-            self.gs.update(hspace=0.075)
-            self.ax0 = self.fig.add_subplot(self.gs[0])
-            self.ax1 = self.fig.add_subplot(self.gs[1],sharex=self.ax0)
-            setp(self.ax0.get_xticklabels(),visible=False)
-            self.c0 = self.ax0
-            self.c1 = self.ax1
-
-            self.c0.xaxis.set_minor_locator(AutoMinorLocator())
-            self.c0.yaxis.set_minor_locator(AutoMinorLocator())
-            #self.c0.yaxis.set_major_locator(MultipleLocator(20))
             
-        else:
-            self.ax0 = self.fig.add_subplot(111)
-            self.c0  = self.ax0
-
-    def text(self,x,y,line,style=None,size=14,manualcoords=False,specialfont=False):
-        if not manualcoords:
-            if not specialfont:
-                self.c0.text(x,y,line,transform=self.c0.transAxes,style=style,
-                             size=size)
-            else:
-                self.c0.text(x,y,line,transform=self.c0.transAxes,style=style,
-                             size=size,fontproperties=font)
-        else:
-            if not specialfont:
-                self.c0.text(x,y,line,style=style,size=size)
-            else:
-                self.c0.text(x,y,line,style=style,fontproperties=fontproperties)
-                
-    def draw(self,show=True,save=None,legend=True,legendloc='best',legendfontsize=14,
-             asi=False,awip=False,ai=False,eventsperbinsize=False,titleunit=''):
-
-        if self.scatter == False:
-            self.c0.hist(self.centers,bins=self.edges[0],weights=self.contents,
-                         label=self.histlabels,color=self.colors,normed=self.normed,
-                         histtype=self.histtype,stacked=self.stacked,linewidth=self.linewidth)
-        else:
-            for i in range(len(self.bos)):
-                self.c0.errorbar(self.centers[i],
-                                 self.contents[i],
-                                 yerr=self.errors[i],
-                                 fmt=self.fmts[i],color=self.colors[i],
-                                 label=self.histlabels[i])
-            
-        if self.data:
-            self.c0.errorbar(self.data.centers,self.data.contents,
-                             fmt='ko',yerr=self.data.error,label='Data')
-        else:
+    def draw(self,axis,ratio_axis=None):
+        axis.hist([stk.centers for stk in self.stack],bins=self.stack[0].bin_edges,
+                  weights=[stk.contents for stk in self.stack],color=self.color,
+                  label=self.labels,histtype='stepfilled',stacked=True)
+        if self.data is None:
             pass
-
-        if self.ratio:
-            self.c1.errorbar(self.ratio.centers,self.ratio.contents,
-                             fmt='ko',yerr=self.ratio.error)
-            self.c1.plot(np.linspace(self.edges[0][0],self.edges[0][-1],100),
-                         np.array([1 for i in range(100)]),'k--')
-
-            if eventsperbinsize:
-                bin_width = str(round(self.edges[0][1] - self.edges[0][0],2))
-                epbs_ytitle = 'Events/'+bin_width+' '+titleunit
-                self.c0.set_ylabel(epbs_ytitle)
-            else:
-                self.c0.set_ylabel(self.titles[1])
-
-            self.c1.set_xlabel(self.titles[0])
-            self.c1.set_ylabel(self.ratiotitle)
-            self.c1.yaxis.set_major_locator(self.plt.MaxNLocator(max_ratio_yticks))
-
         else:
-            self.plt.xlabel(self.titles[0])
-            self.plt.ylabel(self.titles[1])
-            
-        if self.xlim:
-            if self.ratio:
-                self.c1.set_xlim(self.xlim)
-            else:
-                self.c0.set_xlim(self.xlim)
-        if self.ylim:
-            if self.ratio:
-                self.c0.set_ylim(self.ylim)
-            else:
-                self.c0.set_ylim(self.ylim)
-
-        if int(asi + awip + ai) > 1:
-            raise err('you can only choose one of the keywords si, awip, ai to be true')
-
-        pa   = lambda s     : self.text(.02, .92,'ATLAS',size=s,specialfont=True)
-        psup = lambda st, s : self.text(.1445,.92,st,size=s)
-        if asi:  pa(16), psup('Simulation Internal',16)
-        if awip: pa(16), psup('Work in Progress',16)
-        if ai:   pa(16), psup('Internal',16)
-            
-        if legend:
-            self.c0.legend(loc=legendloc,numpoints=1,fontsize=legendfontsize)
-            
-        if save:
-            self.plt.savefig(save)
-        
-        if show:
-            self.plt.show()
-        else:
+            axis.errorbar(self.data.centers,self.data.contents,fmt='ko',
+                          yerr=self.data.error,label='Data')
+        if self.ratio is None:
             pass
-
-class unbinned_object(object):
-    """
-    A base class for an object that doesnt include bins, something with
-    just (x,y) points. (e.g. TGraph).
-    """
-    def __init__(self,obj,objtype='TGraph'):
-        super(unbinned_object,self).__init__()
-        if objtype != 'TGraph':
-            raise err('only objtype \'TGraph\' supported at this time')
-        self.root_tgraph = obj
-
-        self.xy_pairs = np.vstack((np.frombuffer(self.root_tgraph.GetX(),
-                                                 count=self.root_tgraph.GetN()),
-                                   np.frombuffer(self.root_tgraph.GetY(),
-                                                 count=self.root_tgraph.GetN()))).T
-
-class single_tgraph(plot_base):
-    """
-    A single scatter plot of (x,y) values, similar to ROOT's TGraph.
-    The user only needs to give the actual ROOT TGraph.
-    """
-    def __init__(self,obj,objtype='TGraph',**kwargs):
-        super(single_tgraph,self).__init__(**kwargs)
-        self.xy_pairs = unbinned_object(obj,objtype).xy_pairs
-        self.x = self.xy_pairs.T[0]
-        self.y = self.xy_pairs.T[1]
-
-    def draw(self,save=None):
-        self.plt.plot(self.x,self.y,'bo')
-
-        if self.xlim:
-            self.plt.xlim(self.xlim)
-        if self.ylim:
-            self.plt.ylim(self.ylim)
-
-        self.plt.xlabel(self.titles[0])
-        self.plt.ylabel(self.titles[1])
-            
-        if save:
-            self.plt.savefig(save)
-        self.plt.show()
-
-class th2d(plot_base):
-    """
-    This class mimics the ROOT TH2D class with the option 'COLZ'.
-    The user need only supply the ROOT object. Other optional args exist.
-    """
-    def __init__(self,obj,figsize=(8.75,5.92),nticks=5,**kwargs):
-        super(th2d,self).__init__(**kwargs)
-        self.obj = obj
-        self.data = np.frombuffer(obj.GetArray(),count=obj.GetSize())
-        self.data = np.array(np.split(self.data,obj.GetNbinsY()+2))
-        self.data = self.data[1:-1,1:-1]
-        self.bin_widths = (self.obj.GetXaxis().GetBinWidth(1),
-                           self.obj.GetYaxis().GetBinWidth(1))
-        self.fig, self.ax0 = self.plt.subplots(figsize=figsize)
-
-        if not self.xlim:
-            err('Must give xlim in th2d')
-        if not self.ylim:
-            err('Must give ylim in th2d')
-
-        self.nticks = nticks
-            
-    def draw(self,save=None,show=True):
-        colbar = self.ax0.matshow(self.data,origin='lower',aspect='auto')
-        self.ax0.xaxis.set_ticks_position('bottom')
-        self.ax0.set_xticks(np.arange(0,self.data.shape[1],1))
-        self.ax0.set_yticks(np.arange(0,self.data.shape[0],1))
-
-        self.ax0.set_xticklabels(np.around(np.linspace(self.bin_widths[0]/2.0,
-                                                       self.obj.GetXaxis().GetXmax() - self.bin_widths[0]/2.0,
-                                                       self.obj.GetNbinsX()),2))
-        
-        self.ax0.set_yticklabels(np.around(np.linspace(self.bin_widths[1]/2.0,
-                                                       self.obj.GetYaxis().GetXmax() - self.bin_widths[1]/2.0,
-                                                       self.obj.GetNbinsY()),2))
-
-        self.ax0.set_xlabel(self.titles[0])
-        self.ax0.set_ylabel(self.titles[1])
-        
-        self.plt.colorbar(colbar)
-        if show:
-            self.plt.show()
-        if save is not None:
-            self.plt.savefig(save)
-        
-def fill_ratio(ratio,numer,denom):
-    """ Fill a ratio histogram with standard error propagation. """
-    vals = []
-    errs = []
-    for i in range(ratio.GetNbinsX()):
-        j = i+1
-        dv = denom.GetBinContent(j)
-        nv = numer.GetBinContent(j)
-        de = denom.GetBinError(j)
-        ne = numer.GetBinError(j)
-        if dv == 0:
-            ratio.SetBinContent(j,0.0)
-            ratio.SetBinError(j,0.0)
-            vals.append(0.0)
-            errs.append(0.0)
         else:
-            newv  = float(nv)/float(dv)
-            term1 = np.power(float(ne)/float(dv),2)
-            term2 = np.power(float(de*nv)/float(dv*dv),2)
-            newe  = np.sqrt(term1+term2)
-            ratio.SetBinContent(j,newv)
-            ratio.SetBinError(j,newe)
-            vals.append(newv)
-            errs.append(newe)
-    return np.vstack([vals,errs]).T
-
-def profile_pair(prof1,prof2,colors=['orange','blue'],fmts=['o','o'],
-                 histlabels=['p1','p2'],xtitle='xtitle',ytitle='ytitle',
-                 xlim=[0,10],ylim=[0,10],ratiotitle='ratio',legendloc='upper right',
-                 asi=False,awip=False,ai=False,save=None,extratext=None,show=True):
-    """
-    Given two TProfiles and many other keyword args, a pair of TProfiles with 
-    a ratio can be plotted with essentially a single function call
-    """
-
-    ratio = ROOT.TH1D('ratio','',prof1.GetNbinsX(),prof1.GetBinLowEdge(1),
-                      prof1.GetBinLowEdge(prof1.GetNbinsX()+1))
-    fill_ratio(ratio,prof1,prof2)
-    rplplot = multi_hist([prof1,prof2],colors=colors,scatter=True,ratio=ratio,
-                         fmts=fmts,histlabels=histlabels,ratiotitle=ratiotitle,
-                         titles=[xtitle,ytitle],xlim=xlim,ylim=ylim)
-    if extratext: rplplot.text(.015,.85,extratext)
-    rplplot.draw(asi=asi,awip=awip,ai=ai,save=save,legendloc=legendloc,show=show)
-
-def hist_set(data,histlist,colors,labels,fmts=[0,0,0,0,0,0,0],xtitle='x',ytitle='y',
-             xlim=[0,10],ylim=[0,10],ratiotitle='ratio',
-             save=None,extratext=None,show=True,stacked=True,ai=False,awip=False,
-             eventsperbinsize=True,titleunit=''):
-    stack = ROOT.THStack('stack','stack')
-    for h in histlist:
-        stack.Add(h)
-    ratio = ROOT.TH1D('ratio','',histlist[0].GetNbinsX(),histlist[0].GetBinLowEdge(1),
-                      histlist[0].GetBinLowEdge(histlist[0].GetNbinsX()+1))
-    fill_ratio(ratio,data,stack.GetStack().Last())
-    rplplot = multi_hist(histlist,colors=colors,ratio=ratio,fmts=fmts,histlabels=labels,
-                         ratiotitle=ratiotitle,titles=[xtitle,ytitle],
-                         xlim=xlim,ylim=ylim,data=data,stacked=stacked)
-    if extratext: rplplot.text(.015,.85,extratext)
-    rplplot.draw(save=save,show=show,ai=ai,eventsperbinsize=eventsperbinsize,titleunit=titleunit,awip=awip)
+            ratio_axis.errorbar(self.ratio.centers,self.ratio.contents,fmt='ko',
+                                yerr=self.ratio.error,label='Ratio')
