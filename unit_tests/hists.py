@@ -13,33 +13,18 @@ hist2.FillRandom('gaus',10000)
 hist3.FillRandom('gaus',1000)
 hist3.Scale(10.2/hist3.Integral())
 
-def check_plot_base():
-    y = rootplotlib.plot_base(xlim=[1,0],ylim=[1,2],titles=['b','c'])
-    print y.xlim
-    print y.ylim
-    print y.titles
-
-def check_single_hist():
-    m = rootplotlib.single_hist(hist1,
-                                xlim=[-20,20],
-                                ylim=[-100,1000],
-                                titles=['a','b'],
-                                color='green')
-    m.draw(save='ok.eps')
-
-
 def check_multi_hist():
-    m = rootplotlib.multi_hist((hist1,hist2),
-                               colors=['red','green'],
-                               histlabels=['redd','greenn'],
-                               titles=['xaxis','yaxis'],
-                               stacked=False,
-                               data=None,
-                               fmts=['o','o'],
-                               scatter=False,ratio=hist3)
-    m.text(.05,.6,'testtext',style='italic')
-    m.draw(awip=True)
-    
-check_plot_base()
-check_single_hist()
+    stack = rootplotlib.hist_stack([hist1,hist2,hist3],
+                                   data=hist1,ratio=hist3,
+                                   colors=['red','green','orange'],
+                                   labels=['a','b','c'])
+
+    fig, ax0, ax1 = rootplotlib.canvas()
+    stack.draw(ax0,ratio_axis=ax1)
+    ax1.set_xlabel('lol')
+    ax1.set_ylabel('ratio')
+    ax0.set_ylabel('alright')
+
+    fig.savefig('test.eps')
+
 check_multi_hist()
