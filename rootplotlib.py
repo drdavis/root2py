@@ -33,13 +33,13 @@ mpl.rcParams['legend.labelspacing'] = 0.3
 mpl.rcParams['legend.frameon']      = False
 
 plt.rcParams['image.cmap'] = 'viridis'
-max_ratio_yticks           = 5
+max_ratio_yticks           = 4
 
 custom_plt = plt
 
-def canvas(figsize=(8.75,5.92)):
+def canvas_with_ratio(figsize=(8.75,5.92),height_ratios=[3.25,1]):
     fig = custom_plt.figure(figsize=figsize)
-    gs  = gsc.GridSpec(2,1,height_ratios=[3.25,1])
+    gs  = gsc.GridSpec(2,1,height_ratios=height_ratios)
     gs.update(hspace=0.075)
     ax0 = fig.add_subplot(gs[0])
     ax1 = fig.add_subplot(gs[1],sharex=ax0)
@@ -113,7 +113,10 @@ class hist_stack(object):
             axis.errorbar(self.data.centers,self.data.contents,fmt='ko',
                           yerr=self.data.error,label='Data')
         if self.ratio is not None:
+            ratio_axis.yaxis.set_major_locator(plt.MaxNLocator(max_ratio_yticks))
             ratio_axis.errorbar(self.ratio.centers,self.ratio.contents,fmt='ko',
                                 yerr=self.ratio.error,label='Ratio')
+            ratio_axis.plot(self.ratio.edges,np.array([1 for _ in self.ratio.edges]),'k--')
+            ratio_axis.set_xlim([self.ratio.edges[0],self.ratio.edges[-1]])
         if legend:
             axis.legend(loc='best')
