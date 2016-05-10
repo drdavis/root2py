@@ -34,4 +34,21 @@ def check_multi_hist():
 
     fig.savefig('test.eps')
 
+def check_profile():
+    profstuff = rootplotlib.profile_set([hist1,hist2,hist3],
+                                        colors=['blue','orange','green'],
+                                        labels=['a','b','c'],
+                                        ratio=hist4)
+    fig, ax0, ax1 = rootplotlib.canvas_with_ratio()
+    profstuff.draw(ax0,ratio_axis=ax1)
+    fig.savefig('prof.eps')
+
+    p2 = rootplotlib.profile_set([hist1,hist2],
+                                 colors=['black','green'],
+                                 labels=['z','w'])
+    fig, ax0 = rootplotlib.canvas(xtitle='ok')
+    p2.draw(ax0)
+    fig.savefig('prof2.eps')
+    
 check_multi_hist()
+check_profile()

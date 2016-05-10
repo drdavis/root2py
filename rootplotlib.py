@@ -17,7 +17,7 @@ mpl.rcParams['figure.subplot.left']   = 0.16
 mpl.rcParams['figure.subplot.right']  = 0.95
 
 # axes
-mpl.rcParams['axes.labelsize']   = 18
+mpl.rcParams['axes.labelsize']   = 16
 mpl.rcParams['xtick.labelsize']  = 14
 mpl.rcParams['xtick.major.size'] = 8
 mpl.rcParams['xtick.minor.size'] = 4
@@ -37,7 +37,8 @@ max_ratio_yticks           = 4
 
 custom_plt = plt
 
-def canvas_with_ratio(figsize=(8.75,5.92),height_ratios=[3.25,1]):
+def canvas_with_ratio(figsize=(8.75,5.92),height_ratios=[3.25,1],
+                      xtitle='x title',ytitle='ytitle',ratio_title='Ratio'):
     fig = custom_plt.figure(figsize=figsize)
     gs  = gsc.GridSpec(2,1,height_ratios=height_ratios)
     gs.update(hspace=0.075)
@@ -47,7 +48,19 @@ def canvas_with_ratio(figsize=(8.75,5.92),height_ratios=[3.25,1]):
     ax0.yaxis.set_minor_locator(AutoMinorLocator())
     setp(ax0.get_xticklabels(),visible=False)
 
+    ax0.set_ylabel(ytitle)
+    ax1.set_ylabel(ratio_title)
+    ax1.set_xlabel(xtitle)
     return fig, ax0, ax1
+
+def canvas(figsize=(8.75,5.92),height_ratios=[3.25,1],xtitle='x title',ytitle='ytitle'):
+    fig = custom_plt.figure(figsize=figsize)
+    ax0 = fig.add_subplot(111)
+    ax0.set_ylabel(ytitle)
+    ax0.set_xlabel(xtitle)
+    ax0.xaxis.set_minor_locator(AutoMinorLocator())
+    ax0.yaxis.set_minor_locator(AutoMinorLocator())
+    return fig, ax0
 
 class binned_object(object):
     """     
@@ -126,3 +139,29 @@ class hist_stack(object):
                 axis.legend(handles,labels,loc='best')
             else:
                 axis.legend(loc='best')
+
+class profile_set(object):
+    """
+    A class to organize a set of profile histograms. Optional to
+    include a ratio plot.
+    """
+    def __init__(self,root_profiles,ratio=None,colors=['black'],labels=['hist']):
+        super(profile_set,self).__init__()
+        self.profiles = [binned_object(prof) for prof in root_profiles]
+        self.labels   = labels
+        self.colors   = colors
+        if ratio is None:
+            self.ratio = ratio
+        else:
+            self.ratio = binned_object(ratio)
+
+    def draw(self,axis,ratio_axis=None,legend=True):
+        for prof, label, color in zip(self.profiles,self.labels,self.colors):
+            axis.errorbar(prof.centers,prof.contents,yerr=prof.error,label=label,color=color,fmt='o')
+        if self.ratio is not None:
+            ratio_axis.yaxis.set_major_locator(plt.MaxNLocator(max_ratio_yticks))
+            ratio_axis.errorbar(self.ratio.centers,self.ratio.contents,yerr=self.ratio.error,fmt='ko')
+            ratio_axis.set_xlim([self.ratio.edges[0],self.ratio.edges[-1]])
+            ratio_axis.plot(self.ratio.edges,np.array([1 for _ in self.ratio.edges]),'k--')
+        if legend:
+            axis.legend(loc='best')
