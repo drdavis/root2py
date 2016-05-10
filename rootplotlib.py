@@ -119,4 +119,10 @@ class hist_stack(object):
             ratio_axis.plot(self.ratio.edges,np.array([1 for _ in self.ratio.edges]),'k--')
             ratio_axis.set_xlim([self.ratio.edges[0],self.ratio.edges[-1]])
         if legend:
-            axis.legend(loc='best')
+            if self.data is not None:
+                handles, labels = axis.get_legend_handles_labels()
+                handles.insert(0,handles.pop(-1))
+                labels.insert(0,labels.pop(-1))
+                axis.legend(handles,labels,loc='best')
+            else:
+                axis.legend(loc='best')
