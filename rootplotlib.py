@@ -104,11 +104,15 @@ class hist_stack(object):
     A class to organize a set of histograms to be stacked. Optional to
     include data and a ratio plot.
     """
-    def __init__(self,root_hists,data=None,ratio=None,colors=['black'],labels=['hist']):
+    def __init__(self,root_hists,data=None,ratio=None,colors=['black'],labels=['hist'],
+                 histtype='stepfilled',stacked=True,normed=False):
         super(hist_stack,self).__init__()
-        self.stack  = [binned_object(hist) for hist in root_hists]
-        self.labels = labels
-        self.colors = colors
+        self.stack    = [binned_object(hist) for hist in root_hists]
+        self.labels   = labels
+        self.colors   = colors
+        self.histtype = histtype
+        self.stacked  = stacked
+        self.normed   = normed
         if data is None:
             self.data = data
         else:
@@ -121,7 +125,8 @@ class hist_stack(object):
     def draw(self,axis,ratio_axis=None,legend=True):
         axis.hist([stk.centers for stk in self.stack],bins=self.stack[0].edges,
                   weights=[stk.contents for stk in self.stack],color=self.colors,
-                  label=self.labels,histtype='stepfilled',stacked=True)
+                  label=self.labels,histtype=self.histtype,stacked=self.stacked,
+                  normed=self.normed)
         if self.data is not None:
             axis.errorbar(self.data.centers,self.data.contents,fmt='ko',
                           yerr=self.data.error,label='Data')
@@ -159,7 +164,7 @@ class profile_set(object):
         for prof, label, color in zip(self.profiles,self.labels,self.colors):
             axis.errorbar(prof.centers,prof.contents,yerr=prof.error,label=label,color=color,fmt='o')
         if self.ratio is not None:
-            ratio_axis.yaxis.set_major_locator(plt.MaxNLocator(max_ratio_yticks))
+            ratio_axis.yaxis.set_major_locator(custom_plt.MaxNLocator(max_ratio_yticks))
             ratio_axis.errorbar(self.ratio.centers,self.ratio.contents,yerr=self.ratio.error,fmt='ko')
             ratio_axis.set_xlim([self.ratio.edges[0],self.ratio.edges[-1]])
             ratio_axis.plot(self.ratio.edges,np.array([1 for _ in self.ratio.edges]),'k--')
