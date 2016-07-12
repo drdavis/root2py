@@ -77,7 +77,7 @@ class binned_object(object):
 
     contents: the height of each bin
 
-    error:    the error of each bin height
+    errors:    the error of each bin height
 
     edges:    the bin edges |____|____|____|___..
                            [0]  [1]  [2]  [3]     
@@ -90,7 +90,7 @@ class binned_object(object):
         super(binned_object,self).__init__()
         self.contents = np.array([hist.GetBinContent(i+1)
                                   for i in range(hist.GetNbinsX())])
-        self.error    = np.array([hist.GetBinError(i+1)
+        self.errors   = np.array([hist.GetBinError(i+1)
                                   for i in range(hist.GetNbinsX())])
         self.edges    = np.array([hist.GetXaxis().GetBinLowEdge(i+1)
                                   for i in range(hist.GetNbinsX()+1)])
@@ -129,11 +129,11 @@ class hist_stack(object):
                   normed=self.normed)
         if self.data is not None:
             axis.errorbar(self.data.centers,self.data.contents,fmt='ko',
-                          yerr=self.data.error,label='Data')
+                          yerr=self.data.errors,label='Data')
         if self.ratio is not None:
             ratio_axis.yaxis.set_major_locator(plt.MaxNLocator(max_ratio_yticks))
             ratio_axis.errorbar(self.ratio.centers,self.ratio.contents,fmt='ko',
-                                yerr=self.ratio.error,label='Ratio')
+                                yerr=self.ratio.errors,label='Ratio')
             ratio_axis.plot(self.ratio.edges,np.array([1 for _ in self.ratio.edges]),'k--')
             ratio_axis.set_xlim([self.ratio.edges[0],self.ratio.edges[-1]])
         if legend:
@@ -150,7 +150,7 @@ class profile_set(object):
     A class to organize a set of profile histograms. Optional to
     include a ratio plot.
     """
-    def __init__(self,root_profiles,ratio=None,colors=['black'],labels=['hist']):
+    def __init__(self,root_profiles,ratio=None,colors=['black'],labels=['hist'],delzeros=False):
         super(profile_set,self).__init__()
         self.profiles = [binned_object(prof) for prof in root_profiles]
         self.labels   = labels
@@ -160,12 +160,30 @@ class profile_set(object):
         else:
             self.ratio = binned_object(ratio)
 
+        if delzeros:
+            self.og_min, self.og_max = self.profiles[0].edges[0], self.profiles[0].edges[-1]
+            for prof in self.profiles:
+                indices = [i for i, co in enumerate(prof.contents) if co == 0]
+                for index in sorted(indices, reverse=True):
+                    prof.contents = np.delete(prof.contents,index)
+                    prof.centers  = np.delete(prof.centers, index)
+                    prof.edges    = np.delete(prof.edges,   index)
+                    prof.errors   = np.delete(prof.errors,  index)
+            if ratio is not None:
+                indices = [i for i, co in enumerate(self.ratio.contents) if co == 0]
+                for index in sorted(indices, reverse=True):
+                    self.ratio.contents = np.delete(self.ratio.contents,index)
+                    self.ratio.centers  = np.delete(self.ratio.centers, index)
+                    self.ratio.edges    = np.delete(self.ratio.edges,   index)
+                    self.ratio.errors   = np.delete(self.ratio.errors,  index)
+
     def draw(self,axis,ratio_axis=None,legend=True):
         for prof, label, color in zip(self.profiles,self.labels,self.colors):
-            axis.errorbar(prof.centers,prof.contents,yerr=prof.error,label=label,color=color,fmt='o')
+            axis.errorbar(prof.centers,prof.contents,yerr=prof.errors,label=label,color=color,fmt='o')
+            axis.set_xlim([self.og_min,self.og_max])
         if self.ratio is not None:
             ratio_axis.yaxis.set_major_locator(custom_plt.MaxNLocator(max_ratio_yticks))
-            ratio_axis.errorbar(self.ratio.centers,self.ratio.contents,yerr=self.ratio.error,fmt='ko')
+            ratio_axis.errorbar(self.ratio.centers,self.ratio.contents,yerr=self.ratio.errors,fmt='ko')
             ratio_axis.set_xlim([self.ratio.edges[0],self.ratio.edges[-1]])
             ratio_axis.plot(self.ratio.edges,np.array([1 for _ in self.ratio.edges]),'k--')
         if legend:
