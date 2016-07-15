@@ -160,8 +160,8 @@ class profile_set(object):
         else:
             self.ratio = binned_object(ratio)
 
+        self.og_min, self.og_max = self.profiles[0].edges[0], self.profiles[0].edges[-1]
         if delzeros:
-            self.og_min, self.og_max = self.profiles[0].edges[0], self.profiles[0].edges[-1]
             for prof in self.profiles:
                 indices = [i for i, co in enumerate(prof.contents) if co == 0]
                 for index in sorted(indices, reverse=True):
@@ -184,7 +184,8 @@ class profile_set(object):
         if self.ratio is not None:
             ratio_axis.yaxis.set_major_locator(custom_plt.MaxNLocator(max_ratio_yticks))
             ratio_axis.errorbar(self.ratio.centers,self.ratio.contents,yerr=self.ratio.errors,fmt='ko')
-            ratio_axis.set_xlim([self.ratio.edges[0],self.ratio.edges[-1]])
-            ratio_axis.plot(self.ratio.edges,np.array([1 for _ in self.ratio.edges]),'k--')
+            ratio_axis.plot(np.linspace(self.og_min,self.og_max,100),
+                            np.array([1 for _ in range(100)]),'k--')
+            ratio_axis.set_xlim([self.og_min,self.og_max])
         if legend:
             axis.legend(loc='best')
